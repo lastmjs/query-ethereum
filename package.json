@@ -1,0 +1,26 @@
+{
+  "name": "query-ethereum",
+  "version": "0.0.0",
+  "description": "",
+  "scripts": {
+    "start": "ts-node --transpile-only src/app.ts",
+    "geth-docker-pull": "docker pull ethereum/client-go",
+    "geth-docker-goerli": "docker run -it -p 8547:8547 -v ~/development/query-ethereum/geth-data:/root/.ethereum ethereum/client-go --goerli --graphql --graphql.addr 0.0.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lastmjs/query-ethereum.git"
+  },
+  "keywords": [],
+  "author": "Jordan Last <jordan.michael.last@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lastmjs/query-ethereum/issues"
+  },
+  "homepage": "https://github.com/lastmjs/query-ethereum#readme",
+  "dependencies": {
+    "node-fetch": "2.6.0",
+    "ts-node": "8.6.2",
+    "typescript": "3.7.5"
+  }
+}

@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "target": "esnext",
+        "lib": ["es2017", "dom", "es2018"],
+        "allowJs": true,
+        "moduleResolution": "node"
+    }
+}
