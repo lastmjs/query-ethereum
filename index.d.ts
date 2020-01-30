@@ -6,6 +6,7 @@ export type Block = {
 export type Transaction = {
     gasPrice: WEI;
     gasUsed: Gas;
+    value: WEI;
 };
 
 export type GQLResult = {
@@ -18,3 +19,10 @@ export type WEI = bigint;
 export type Gas = bigint;
 
 type HexString = string;
+type USD = number;
+
+export type FeesToPriceInfoForDay = {
+    readonly dateInDay: Date;
+    readonly priceInUSD: USD;
+    readonly feesInETH: ETH;
+};
