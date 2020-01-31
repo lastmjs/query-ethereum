@@ -1,4 +1,4 @@
-import { GQLResult } from "../../index.d";
+import { GQLResult } from "../..";
 import * as fetch from 'node-fetch';
 
 export async function gqlRequest(query: string, variables?: {}): Promise<GQLResult> {

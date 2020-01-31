@@ -1,0 +1,129 @@
+scalar BigInt
+scalar Hex32Bytes
+scalar Hex
+scalar Date
+
+type Query {
+    blocks(where: BlocksWhereInput): BlocksResult!
+}
+
+input BlocksWhereInput {
+    number: BigInt
+    number_gt: BigInt
+    number_gte: BigInt
+    number_lt: BigInt
+    number_lte: BigInt
+
+    transactionCount: Int
+    transactionCount_gt: Int
+    transactionCount_gte: Int
+    transactionCount_lt: Int
+    transactionCount_lte: Int
+
+    gasLimit: BigInt
+    gasLimit_gt: BigInt
+    gasLimit_gte: BigInt
+    gasLimit_lt: BigInt
+    gasLimit_lte: BigInt
+
+    gasUsed: BigInt
+    gasUsed_gt: BigInt
+    gasUsed_gte: BigInt
+    gasUsed_lt: BigInt
+    gasUsed_lte: BigInt
+
+    timestamp: Date
+    timestamp_gt: Date
+    timestamp_gte: Date
+    timestamp_lt: Date
+    timestamp_lte: Date
+
+    difficulty: BigInt
+    difficulty_gt: BigInt
+    difficulty_gte: BigInt
+    difficulty_lt: BigInt
+    difficulty_lte: BigInt
+
+    totalDifficulty: BigInt
+    totalDifficulty_gt: BigInt
+    totalDifficulty_gte: BigInt
+    totalDifficulty_lt: BigInt
+    totalDifficulty_lte: BigInt
+
+    ommerCount: Int
+    ommerCount_gt: Int
+    ommerCount_gte: Int
+    ommerCount_lt: Int
+    ommerCount_lte: Int
+}
+
+type Block {
+    number: BigInt!
+    hash: Hex32Bytes!
+    nonce: Hex!
+    transactionsRoot: Hex32Bytes!
+    transactionCount: Int!
+    stateRoot: Hex32Bytes!
+    receiptsRoot: Hex32Bytes!
+    extraData: Hex! # TODO we might want to allow decoding this
+    gasLimit: BigInt!
+    gasUsed: BigInt!
+    timestamp: Date!
+    logsBloom: Hex!
+    mixHash: Hex32Bytes!
+    difficulty: BigInt!
+    totalDifficulty: BigInt!
+    ommerCount: Int!
+    ommerHash: Hex32Bytes!
+}
+
+type BlocksResult {
+    stats: BlockStats!
+    items: [Block!]!
+}
+
+type BlockStats {
+    total: Int!
+    average: Average!
+    transactionCount: TransactionCountStats!
+    gasLimit: GasLimitStats!
+    gasUsed: GasUsedStats!
+    difficulty: DifficultyStats!
+    ommerCount: OmmerCountStats!
+}
+
+type TransactionCountStats {
+    total: Int!
+    average: Average!
+}
+
+type GasLimitStats {
+    total: Int!
+    average: Average!
+}
+
+type GasUsedStats {
+    total: Int!
+    average: Average!
+}
+
+type DifficultyStats {
+    total: Int!
+    average: Average!
+}
+
+type OmmerCountStats {
+    total: Int!
+    average: Average!
+}
+
+type Average {
+    perBlock: Float!
+    perSecond: Float!
+    perMinute: Float!
+    perHour: Float!
+    perDay: Float!
+    perWeek: Float!
+    perMonth: Float!
+    perYear: Float!
+}

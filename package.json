@@ -4,8 +4,15 @@
   "description": "",
   "scripts": {
     "start": "ts-node --transpile-only src/app.ts",
+    "graphql": "ts-node --transpile-only src/graphql/server.ts",
     "geth-docker-pull": "docker pull ethereum/client-go",
-    "geth-docker-run": "docker run -it -p 8547:8547 -p 30303:30303 -v ~/development/query-ethereum/geth-data:/root/.ethereum ethereum/client-go --graphql --graphql.addr 0.0.0.0"
+    "geth-main-fast-sync": "docker run -it -p 8547:8547 -p 30303:30303 -v ~/development/query-ethereum/geth-data:/root/.ethereum ethereum/client-go --graphql --graphql.addr 0.0.0.0 --nousb",
+    "geth-main-no-sync": "docker run -it -p 8547:8547 -v ~/development/query-ethereum/geth-data:/root/.ethereum ethereum/client-go --graphql --graphql.addr 0.0.0.0 --nousb --maxpeers 0",
+    "geth-goerli-fast-sync": "docker run -it -p 8547:8547 -p 30303:30303 -v ~/development/query-ethereum/geth-data:/root/.ethereum ethereum/client-go --goerli --graphql --graphql.addr 0.0.0.0 --nousb",
+    "postgres-docker-pull": "docker pull postgres:12",
+    "postgres-dev": "docker run -it --rm -p 5433:5432 -v ~/development/query-ethereum/postgres-data:/var/lib/postgresql/data postgres:12",
+    "psql-dev": "psql -h localhost -p 5433 -U postgres",
+    "postgres-create-database-development": "ts-node --transpile-only src/postgres/create-database.ts"
   },
   "repository": {
     "type": "git",
@@ -19,9 +26,15 @@
   },
   "homepage": "https://github.com/lastmjs/query-ethereum#readme",
   "dependencies": {
+    "apollo-server": "2.9.16",
     "fs-extra": "8.1.0",
+    "graphql": "14.6.0",
     "node-fetch": "2.6.0",
+    "pg": "7.18.1",
     "ts-node": "8.6.2",
     "typescript": "3.7.5"
+  },
+  "devDependencies": {
+    "@types/pg": "^7.14.1"
   }
 }

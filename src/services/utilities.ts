@@ -8,7 +8,7 @@ import {
 } from '../../index.d';
 import {
     gqlRequest
-} from './graphql';
+} from '../graphql/graphql';
 import * as fs from 'fs-extra';
 
 const priceInfoForDays = JSON.parse(fs.readFileSync('./stats/etherscan-price-data.json'));
