@@ -16,7 +16,8 @@
     "postgres-dev": "docker run -it --rm -p 5433:5432 -v ~/development/query-ethereum/postgres-data:/var/lib/postgresql/data postgres:12",
     "psql-dev": "psql -h localhost -p 5433 -U postgres",
     "postgres-create-database-development": "ts-node --transpile-only src/postgres/create-database.ts",
-    "postgres-create-database-production": ". ./.env-production && ts-node --transpile-only src/postgres/create-database.ts"
+    "postgres-create-database-production": ". ./.env-production && ts-node --transpile-only src/postgres/create-database.ts",
+    "generate-graphql-types": "graphql-cli codegen"
   },
   "repository": {
     "type": "git",
@@ -34,6 +35,7 @@
     "bignumber.js": "9.0.0",
     "fs-extra": "8.1.0",
     "graphql": "14.6.0",
+    "graphql-cli": "3.0.14",
     "node-fetch": "2.6.0",
     "pg": "7.18.1",
     "pm2": "4.2.3",

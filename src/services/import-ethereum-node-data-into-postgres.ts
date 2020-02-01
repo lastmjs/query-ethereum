@@ -70,7 +70,7 @@ async function importBlocks(
                 block.hash,
                 block.nonce,
                 block.transactionsRoot,
-                block.transactionCount,
+                block.transactionCount === null ? 0 : block.transactionCount,
                 block.stateRoot,
                 block.receiptsRoot,
                 block.extraData,
