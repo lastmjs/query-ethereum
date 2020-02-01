@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "start": "ts-node --transpile-only src/app.ts",
-    "start-production": ". ./env-production && pm2 start npm -- start",
+    "start-production": ". ./.env-production && pm2 start npm -- start",
     "start-development": ". ./.env-development && npm start",
     "graphql": "ts-node --transpile-only src/graphql/server.ts",
     "geth-docker-pull": "docker pull ethereum/client-go",
