@@ -8,6 +8,10 @@ export async function startImport() {
 
 }
 
+
+// TODO we need to put a base case in here
+// TODO we might want to make this more intelligent, if the blocks are already in the database, we don't want to override them
+// TODO this could occur any time this function is running concurrently with another copy of itself, say once we have multiple gql servers
 async function importBlocks(
     from: number,
     skip: number = 1000
@@ -114,6 +118,13 @@ async function importBlocks(
 
     console.log(`imported blocks ${from} - ${from + skip}`);
     console.log(`${((from + skip) / 9300000 * 100).toFixed(2)}% complete`);
+
+    if (gqlResult.data.blocks.length < 1000) {
+        console.log('importing complete');
+        return;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     await importBlocks(from + skip + 1);
 }

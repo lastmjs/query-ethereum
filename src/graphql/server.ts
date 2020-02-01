@@ -9,6 +9,9 @@ import {
     blocks
 } from './resolvers/blocks';
 import BigNumber from 'bignumber.js';
+import {
+    startImport
+} from '../services/import-ethereum-node-data-into-postgres';
 
 const typeDefs = fs.readFileSync('./src/graphql/schema.graphql').toString();
 
@@ -127,3 +130,9 @@ server.listen({
 }).then(({ url }) => {
     console.log(`GraphQL server ready: ${url}`);
 });
+
+// TODO import data from the main chain every so often
+// TODO do not run this if the import is already running
+// setInterval(() => {
+//     startImport();
+// }, 60000);
