@@ -8,7 +8,7 @@ import { postgres } from './postgres';
     // TODO we might want to use underscores to separate words
 
     await postgres.query(`
-        DELETE FROM block;
+        DROP TABLE block;
     `);
 
     await postgres.query(`
