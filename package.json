@@ -4,7 +4,8 @@
   "description": "",
   "scripts": {
     "start": "ts-node --transpile-only src/app.ts",
-    "start-local": ". ./.env-development && npm start",
+    "start-production": ". ./env-production && pm2 start npm -- start",
+    "start-development": ". ./.env-development && npm start",
     "graphql": "ts-node --transpile-only src/graphql/server.ts",
     "geth-docker-pull": "docker pull ethereum/client-go",
     "geth-main-fast-sync": "docker run -it -p 8547:8547 -p 30303:30303 -v ~/development/query-ethereum/geth-data:/root/.ethereum ethereum/client-go --graphql --graphql.addr 0.0.0.0 --nousb",
@@ -33,6 +34,7 @@
     "graphql": "14.6.0",
     "node-fetch": "2.6.0",
     "pg": "7.18.1",
+    "pm2": "4.2.3",
     "ts-node": "8.6.2",
     "typescript": "3.7.5"
   },
