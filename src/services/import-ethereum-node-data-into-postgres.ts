@@ -124,7 +124,7 @@ async function importBlocks(
         return;
     }
 
-    // await new Promise((resolve) => setTimeout(resolve, 10000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     await importBlocks(from + skip + 1);
 }
