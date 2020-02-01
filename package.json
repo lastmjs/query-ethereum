@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "",
   "scripts": {
-    "start": "ts-node --transpile-only src/graphql/server.ts",
+    "start": "NODE_OPTIONS=\"--max-old-space-size=32768\" ts-node --transpile-only src/graphql/server.ts",
     "start-production": ". ./.env-production && pm2 start npm -- start",
     "start-development": ". ./.env-development && npm start",
     "import-development": ". ./.env-development && ts-node --transpile-only src/app.ts",
