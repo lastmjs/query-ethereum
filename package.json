@@ -15,7 +15,8 @@
     "postgres-docker-pull": "docker pull postgres:12",
     "postgres-dev": "docker run -it --rm -p 5433:5432 -v ~/development/query-ethereum/postgres-data:/var/lib/postgresql/data postgres:12",
     "psql-dev": "psql -h localhost -p 5433 -U postgres",
-    "postgres-create-database-development": "ts-node --transpile-only src/postgres/create-database.ts"
+    "postgres-create-database-development": "ts-node --transpile-only src/postgres/create-database.ts",
+    "postgres-create-database-production": ". ./.env-production && ts-node --transpile-only src/postgres/create-database.ts"
   },
   "repository": {
     "type": "git",

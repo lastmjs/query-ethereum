@@ -1,9 +1,15 @@
+// throw new Error('This will drop all tables!');
+
 import { postgres } from './postgres';
 
 (async () => {
 
     // TODO You will have to manually create the query_ethereum database before you can execute these commands
     // TODO we might want to use underscores to separate words
+
+    await postgres.query(`
+        DELETE FROM block;
+    `);
 
     await postgres.query(`
         CREATE TABLE block (
