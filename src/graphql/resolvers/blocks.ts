@@ -26,15 +26,10 @@ export async function blocks(
                             timestamp DESC;
     `;
 
-    console.log(sqlQuery);
-    console.log([...(whereClauseResult === 'NO_WHERE_PRESENT' ? [] : whereClauseResult.variables)])
-
     const sqlQueryResponse = await postgres.query({
         text: sqlQuery,
         values: [...(whereClauseResult === 'NO_WHERE_PRESENT' ? [] : whereClauseResult.variables)]
     });
-
-    console.log(sqlQueryResponse.rows);
 
     // TODO do not calculate all of the stats all of the time, only when selected
     return {
@@ -90,6 +85,26 @@ function constructWhereClause(args: any, variableStartNumber: number): Readonly<
         'lte': '<='
     };    
 
+    const supportedFieldNames = [
+        'number',
+        'hash',
+        'nonce',
+        'transactionsRoot',
+        'transactionCount',
+        'stateRoot',
+        'receiptsRoot',
+        'extraData',
+        'gasLimit',
+        'gasUsed',
+        'timestamp',
+        'logsBloom',
+        'mixHash',
+        'difficulty',
+        'totalDifficulty',
+        'ommerCount',
+        'ommerHash'    
+    ];
+
     const whereClauseResult: Readonly<WhereClauseResult> = Object.entries(args.where).reduce((result, entry, index) => {    
         const fieldName: string = entry[0];
         const fieldValue: any = entry[1];
@@ -98,6 +113,11 @@ function constructWhereClause(args: any, variableStartNumber: number): Readonly<
         const fieldNameSuffix: string = fieldName.split('_')[1] || '';
 
         const operation: '=' | '>' | '>=' | '<' | '<=' = suffixMap[fieldNameSuffix];
+
+        // TODO this protects us from SQL injection. Ensure that this is good enough
+        if (supportedFieldNames.indexOf(fieldNamePrefix) === -1) {
+            throw new Error('Not supported');
+        }
 
         return {
             whereClause: `${result.whereClause} ${index !== 0 ? 'AND' : ''} ${fieldNamePrefix} ${operation} $${variableStartNumber + index}`,
@@ -137,7 +157,7 @@ function getStats(blocks: ReadonlyArray<Block>, totaler: () => BigNumber) {
     const total: BigNumber = totaler();
 
     return {
-        total: total,
+        total,
         average: {
             perBlock: total.dividedBy(blocks.length),
             perSecond: deltaMilliseconds.eq(0) ? 0 : total.dividedBy(deltaMilliseconds.dividedBy(1000)).toFixed(2),
