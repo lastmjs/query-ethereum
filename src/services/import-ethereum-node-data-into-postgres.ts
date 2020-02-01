@@ -81,7 +81,7 @@ async function importBlocks(
                 block.mixHash,
                 parseInt(block.difficulty),
                 parseInt(block.totalDifficulty),
-                block.ommerCount,
+                block.ommerCount === null ? 0 : block.ommerCount,
                 block.ommerHash
             ]
         };
