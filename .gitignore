@@ -3,4 +3,5 @@
 /stats
 /postgres-data
 /dellg7.pem
-/.env
+/.env-production
+/.env-development
