@@ -1,3 +1,6 @@
+// TODO generate all of the GraphQL types with a generator
+export type BlocksResult = {};
+
 export type Block = {
     readonly number: HexString;
     readonly transactions: ReadonlyArray<Transaction>;

@@ -27,6 +27,7 @@
   "homepage": "https://github.com/lastmjs/query-ethereum#readme",
   "dependencies": {
     "apollo-server": "2.9.16",
+    "bignumber.js": "9.0.0",
     "fs-extra": "8.1.0",
     "graphql": "14.6.0",
     "node-fetch": "2.6.0",

@@ -1,4 +1,5 @@
 scalar BigInt
+scalar BigDecimal
 scalar Hex32Bytes
 scalar Hex
 scalar Date
@@ -7,12 +8,32 @@ type Query {
     blocks(where: BlocksWhereInput): BlocksResult!
 }
 
+type Block {
+    number: Int!
+    hash: Hex32Bytes!
+    nonce: Hex!
+    transactionsRoot: Hex32Bytes!
+    transactionCount: Int!
+    stateRoot: Hex32Bytes!
+    receiptsRoot: Hex32Bytes!
+    extraData: Hex! # TODO we might want to allow decoding this
+    gasLimit: BigInt!
+    gasUsed: BigInt!
+    timestamp: Date!
+    logsBloom: Hex!
+    mixHash: Hex32Bytes!
+    difficulty: BigInt!
+    totalDifficulty: BigInt!
+    ommerCount: Int!
+    ommerHash: Hex32Bytes!
+}
+
 input BlocksWhereInput {
-    number: BigInt
-    number_gt: BigInt
-    number_gte: BigInt
-    number_lt: BigInt
-    number_lte: BigInt
+    number: Int
+    number_gt: Int
+    number_gte: Int
+    number_lt: Int
+    number_lte: Int
 
     transactionCount: Int
     transactionCount_gt: Int
@@ -57,33 +78,13 @@ input BlocksWhereInput {
     ommerCount_lte: Int
 }
 
-type Block {
-    number: BigInt!
-    hash: Hex32Bytes!
-    nonce: Hex!
-    transactionsRoot: Hex32Bytes!
-    transactionCount: Int!
-    stateRoot: Hex32Bytes!
-    receiptsRoot: Hex32Bytes!
-    extraData: Hex! # TODO we might want to allow decoding this
-    gasLimit: BigInt!
-    gasUsed: BigInt!
-    timestamp: Date!
-    logsBloom: Hex!
-    mixHash: Hex32Bytes!
-    difficulty: BigInt!
-    totalDifficulty: BigInt!
-    ommerCount: Int!
-    ommerHash: Hex32Bytes!
-}
-
 type BlocksResult {
     stats: BlockStats!
     items: [Block!]!
 }
 
 type BlockStats {
-    total: Int!
+    total: BigInt!
     average: Average!
     transactionCount: TransactionCountStats!
     gasLimit: GasLimitStats!
@@ -93,37 +94,37 @@ type BlockStats {
 }
 
 type TransactionCountStats {
-    total: Int!
+    total: BigInt!
     average: Average!
 }
 
 type GasLimitStats {
-    total: Int!
+    total: BigInt!
     average: Average!
 }
 
 type GasUsedStats {
-    total: Int!
+    total: BigInt!
     average: Average!
 }
 
 type DifficultyStats {
-    total: Int!
+    total: BigInt!
     average: Average!
 }
 
 type OmmerCountStats {
-    total: Int!
+    total: BigInt!
     average: Average!
 }
 
 type Average {
-    perBlock: Float!
-    perSecond: Float!
-    perMinute: Float!
-    perHour: Float!
-    perDay: Float!
-    perWeek: Float!
-    perMonth: Float!
-    perYear: Float!
+    perBlock: BigDecimal!
+    perSecond: BigDecimal!
+    perMinute: BigDecimal!
+    perHour: BigDecimal!
+    perDay: BigDecimal!
+    perWeek: BigDecimal!
+    perMonth: BigDecimal!
+    perYear: BigDecimal!
 }
