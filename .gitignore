@@ -2,3 +2,5 @@
 /node_modules
 /stats
 /postgres-data
+/dellg7.pem
+/.env

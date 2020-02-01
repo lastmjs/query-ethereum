@@ -7,6 +7,6 @@ export const postgres = new Pool({
     host: 'localhost',
     port: 5433,
     user: 'postgres',
-    // password: 'password',
+    password: process.env.QUERY_ETHEREUM_DB_PASSWORD,
     ssl: false
 });
