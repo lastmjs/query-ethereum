@@ -21,7 +21,7 @@ import { postgres } from './postgres';
             logsbloom           text  not null,
             mixhash             text  not null,
             difficulty          bigint  not null,
-            totaldifficulty     bigint  not null,
+            totaldifficulty     text  not null,
             ommercount          int  not null,
             ommerhash           text  not null
         );
