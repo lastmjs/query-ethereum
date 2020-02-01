@@ -5,7 +5,7 @@
   "scripts": {
     "start": "NODE_OPTIONS=\"--max-old-space-size=32768\" ts-node --transpile-only src/graphql/server.ts",
     "start-production": ". ./.env-production && pm2 start npm -- start",
-    "start-development": ". ./.env-development && npm start",
+    "start-development": ". ./.env-development && npm run generate-graphql-types && npm start",
     "import-development": ". ./.env-development && ts-node --transpile-only src/app.ts",
     "import-production": ". ./.env-production && NODE_OPTIONS=\"--max-old-space-size=32768\" ts-node --transpile-only src/app.ts",
     "geth-docker-pull": "docker pull ethereum/client-go",
@@ -17,7 +17,7 @@
     "psql-dev": "psql -h localhost -p 5433 -U postgres",
     "postgres-create-database-development": "ts-node --transpile-only src/postgres/create-database.ts",
     "postgres-create-database-production": ". ./.env-production && ts-node --transpile-only src/postgres/create-database.ts",
-    "generate-graphql-types": "graphql-cli codegen"
+    "generate-graphql-types": "graphql-codegen"
   },
   "repository": {
     "type": "git",
@@ -31,11 +31,12 @@
   },
   "homepage": "https://github.com/lastmjs/query-ethereum#readme",
   "dependencies": {
+    "@graphql-codegen/cli": "1.12.1",
+    "@graphql-codegen/typescript": "1.12.1",
     "apollo-server": "2.9.16",
     "bignumber.js": "9.0.0",
     "fs-extra": "8.1.0",
     "graphql": "14.6.0",
-    "graphql-cli": "3.0.14",
     "node-fetch": "2.6.0",
     "pg": "7.18.1",
     "pm2": "4.2.3",

@@ -1,0 +1,4 @@
+schema: ./src/graphql/schema.graphql
+generates:
+  src/graphql/types.ts:
+    - typescript

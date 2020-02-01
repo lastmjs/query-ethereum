@@ -119,12 +119,12 @@ async function importBlocks(
     console.log(`imported blocks ${from} - ${from + skip}`);
     console.log(`${((from + skip) / 9300000 * 100).toFixed(2)}% complete`);
 
-    if (gqlResult.data.blocks.length < 1000) {
+    if (gqlResult.data.blocks.length < skip) {
         console.log('importing complete');
         return;
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 10000));
 
     await importBlocks(from + skip + 1);
 }

@@ -1,6 +1,7 @@
 import {
-    BlocksResult
-} from '../../../index.d';
+    BlocksResult,
+    Block
+} from '../types';
 import { GraphQLResolveInfo } from 'graphql';
 import { postgres } from '../../postgres/postgres';
 import BigNumber from 'bignumber.js';
