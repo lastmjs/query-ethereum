@@ -14,7 +14,7 @@ export async function startImport() {
 // TODO this could occur any time this function is running concurrently with another copy of itself, say once we have multiple gql servers
 async function importBlocks(
     from: number,
-    skip: number = 100
+    skip: number = 1000
 ) {
     // TODO this will never terminate, but right now I am running it manually
 
@@ -124,7 +124,7 @@ async function importBlocks(
         return;
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    // await new Promise((resolve) => setTimeout(resolve, 5000));
 
     await importBlocks(from + skip + 1);
 }
