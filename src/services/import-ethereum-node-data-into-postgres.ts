@@ -8,34 +8,31 @@ const numBlocksToExportToPostgres: number = 1000;
 
 export async function startImport() {
     
+    try {
+        const lastBlockNumberinPostgres: number = await getLastBlockNumberInPostgres();
+        
+        await generateBlockCSV(lastBlockNumberinPostgres);
+        
+        const blockCSVFileContents: string = (await fs.readFile('./ethereum-etl-data/blocks.csv')).toString();
     
-    const lastBlockNumberinPostgres: number = await getLastBlockNumberInPostgres();
-    
-    await generateBlockCSV(lastBlockNumberinPostgres);
-    
-    const blockCSVFileContents: string = (await fs.readFile('./ethereum-etl-data/blocks.csv')).toString();
-
-    await importBlocks(blockCSVFileContents, lastBlockNumberinPostgres);
+        await importBlocks(blockCSVFileContents, lastBlockNumberinPostgres);
+    }
+    catch(error) {
+        console.log(error);
+    }    
 }
 
-// TODO make sure that if this errors out, that it tries again
 function generateBlockCSV(lastBlockNumberInPostgres: number) {
     return new Promise((resolve) => {
-        try {
-            console.log('importing from geth');
-            exec(`docker run -v ${process.env.QUERY_ETHEREUM_ETHEREUM_ETL_DATA_DIR}:/ethereum-etl/output ethereum-etl:latest export_blocks_and_transactions --start-block ${lastBlockNumberInPostgres} --end-block ${lastBlockNumberInPostgres + numBlocksToImportFromGeth - 1} --provider-uri http://ec2-34-223-3-112.us-west-2.compute.amazonaws.com:8545 --blocks-output output/blocks.csv`, (err, stdout, stderr) => {
-                console.log('err', err);
-    
-                console.log('stdout', stdout);
-                console.log('stderr', stderr);
-            
-                resolve();
-            });
-        }
-        catch(error) {
-            console.log(error);
+        console.log('importing from geth');
+        exec(`docker run -v ${process.env.QUERY_ETHEREUM_ETHEREUM_ETL_DATA_DIR}:/ethereum-etl/output ethereum-etl:latest export_blocks_and_transactions --start-block ${lastBlockNumberInPostgres} --end-block ${lastBlockNumberInPostgres + numBlocksToImportFromGeth - 1} --provider-uri http://ec2-34-223-3-112.us-west-2.compute.amazonaws.com:8545 --blocks-output output/blocks.csv`, (err, stdout, stderr) => {
+            console.log('err', err);
+
+            console.log('stdout', stdout);
+            console.log('stderr', stderr);
+        
             resolve();
-        }
+        });
     });    
 }
 
