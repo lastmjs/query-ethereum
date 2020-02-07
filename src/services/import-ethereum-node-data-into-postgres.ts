@@ -23,7 +23,7 @@ export async function startImport() {
 }
 
 function generateBlockCSV(lastBlockNumberInPostgres: number) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         console.log('importing from geth');
         console.log(`docker run -v ${process.env.QUERY_ETHEREUM_ETHEREUM_ETL_DATA_DIR}:/ethereum-etl/output ethereum-etl:latest export_blocks_and_transactions --start-block ${lastBlockNumberInPostgres} --end-block ${lastBlockNumberInPostgres + numBlocksToImportFromGeth - 1} --provider-uri http://ec2-34-223-3-112.us-west-2.compute.amazonaws.com:8545 --blocks-output output/blocks.csv`);
         exec(`docker run -v ${process.env.QUERY_ETHEREUM_ETHEREUM_ETL_DATA_DIR}:/ethereum-etl/output ethereum-etl:latest export_blocks_and_transactions --start-block ${lastBlockNumberInPostgres} --end-block ${lastBlockNumberInPostgres + numBlocksToImportFromGeth - 1} --provider-uri http://ec2-34-223-3-112.us-west-2.compute.amazonaws.com:8545 --blocks-output output/blocks.csv`, (err, stdout, stderr) => {
@@ -32,6 +32,10 @@ function generateBlockCSV(lastBlockNumberInPostgres: number) {
             console.log('stdout', stdout);
             console.log('stderr', stderr);
         
+            if (err) {
+                reject(err);
+            }
+
             resolve();
         });
     });    
