@@ -28,10 +28,8 @@ const resolvers: Readonly<IResolvers> = {
         gasLimit: (obj) => { return obj.gaslimit },
         gasUsed: (obj) => { return obj.gasused },
         logsBloom: (obj) => { return obj.logsbloom },
-        mixHash: (obj) => { return obj.mixhash },
         totalDifficulty: (obj) => { return obj.totaldifficulty },
-        ommerCount: (obj) => { return obj.ommercount },
-        ommerHash: (obj) => { return obj.ommerhash }
+        unclesHash: (obj) => { return obj.uncleshash }
     },
     BigInt: new GraphQLScalarType({ // TODO make sure this type is exactly correct, since we are using BigNumber the values could be decimals, we might want to ensure that they aren't
         name: 'BigInt',
@@ -131,8 +129,21 @@ server.listen({
     console.log(`GraphQL server ready: ${url}`);
 });
 
+let importing = false;
+
 // TODO import data from the main chain every so often
 // TODO do not run this if the import is already running
-// setInterval(() => {
-//     startImport();
-// }, 60000);
+setInterval(async () => {
+
+    if (importing === false) {
+        importing = true;
+        const startTime = new Date();
+        await startImport();
+        const endTime = new Date();
+
+        console.log(`import took: ${(endTime.getTime() - startTime.getTime()) / 1000} seconds`);
+
+        importing = false;
+    }
+
+}, 30000);

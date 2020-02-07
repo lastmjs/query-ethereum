@@ -10,14 +10,15 @@
     "import-production": ". ./.env-production && NODE_OPTIONS=\"--max-old-space-size=32768\" ts-node --transpile-only src/app.ts",
     "geth-docker-pull": "docker pull ethereum/client-go",
     "geth-main-fast-sync": "docker run -it -p 8547:8547 -p 30303:30303 -v ~/development/query-ethereum/geth-data:/root/.ethereum ethereum/client-go --graphql --graphql.addr 0.0.0.0 --nousb",
-    "geth-main-no-sync": "docker run -it -p 8547:8547 -v ~/development/query-ethereum/geth-data:/root/.ethereum ethereum/client-go --graphql --graphql.addr 0.0.0.0 --nousb --maxpeers 0",
+    "geth-main-no-sync": "docker run -it -p 8547:8547 -p 8545:8545 -v ~/development/query-ethereum/geth-data:/root/.ethereum ethereum/client-go --graphql --graphql.addr 0.0.0.0 --rpc --rpcaddr 0.0.0.0 --nousb --maxpeers 0",
     "geth-goerli-fast-sync": "docker run -it -p 8547:8547 -p 30303:30303 -v ~/development/query-ethereum/geth-data:/root/.ethereum ethereum/client-go --goerli --graphql --graphql.addr 0.0.0.0 --nousb",
     "postgres-docker-pull": "docker pull postgres:12",
     "postgres-dev": "docker run -it --rm -p 5433:5432 -v ~/development/query-ethereum/postgres-data:/var/lib/postgresql/data postgres:12",
     "psql-dev": "psql -h localhost -p 5433 -U postgres",
-    "postgres-create-database-development": "ts-node --transpile-only src/postgres/create-database.ts",
+    "postgres-create-database-development": ". ./.env-development && ts-node --transpile-only src/postgres/create-database.ts",
     "postgres-create-database-production": ". ./.env-production && ts-node --transpile-only src/postgres/create-database.ts",
-    "generate-graphql-types": "graphql-codegen"
+    "generate-graphql-types": "graphql-codegen",
+    "ethereum-etl": "docker run -v ~/development/query-ethereum/ethereum-etl-data:/ethereum-etl/output ethereum-etl:latest export_blocks_and_transactions --start-block 0 --end-block 1000 --provider-uri http://172.17.0.1:8545 --blocks-output output/blocks.csv"
   },
   "repository": {
     "type": "git",
@@ -44,6 +45,7 @@
     "typescript": "3.7.5"
   },
   "devDependencies": {
+    "@types/fs-extra": "8.0.1",
     "@types/pg": "^7.14.1"
   }
 }

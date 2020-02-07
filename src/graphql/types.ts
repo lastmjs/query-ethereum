@@ -41,11 +41,11 @@ export type Block = {
   gasUsed: Scalars['BigInt'],
   timestamp: Scalars['Date'],
   logsBloom: Scalars['Hex'],
-  mixHash: Scalars['Hex32Bytes'],
+  /** mixHash: Hex32Bytes! # TODO This might be specific to a mining node, it isn't being returned from ethereum_etl */
   difficulty: Scalars['BigInt'],
   totalDifficulty: Scalars['BigInt'],
-  ommerCount: Scalars['Int'],
-  ommerHash: Scalars['Hex32Bytes'],
+  /** uncleCount: Int! # TODO I do not know how to get this from the ethereum_etl data yet */
+  unclesHash: Scalars['Hex32Bytes'],
 };
 
 export type BlocksResult = {

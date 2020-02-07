@@ -11,25 +11,24 @@ import { postgres } from './postgres';
         DROP TABLE block;
     `);
 
+    // TODO make number unique
     await postgres.query(`
         CREATE TABLE block (
-            number              bigint  not null,
-            hash                text  not null,
-            nonce               text  not null,
-            transactionsroot    text  not null,
-            transactioncount    int  not null,
-            stateroot           text  not null,
-            receiptsroot        text  not null,
-            extradata           text  not null,
-            gaslimit            bigint  not null,
-            gasused             bigint  not null,
-            timestamp           timestamp  not null,
-            logsbloom           text  not null,
-            mixhash             text  not null,
-            difficulty          bigint  not null,
-            totaldifficulty     text  not null,
-            ommercount          int  not null,
-            ommerhash           text  not null
+            number              bigint      not null    unique,
+            hash                text        not null,
+            nonce               text        not null,
+            transactionsroot    text        not null,
+            transactioncount    int         not null,
+            stateroot           text        not null,
+            receiptsroot        text        not null,
+            extradata           text        not null,
+            gaslimit            bigint      not null,
+            gasused             bigint      not null,
+            timestamp           timestamp   not null,
+            logsbloom           text        not null,
+            difficulty          bigint      not null,
+            totaldifficulty     text        not null,
+            uncleshash          text        not null
         );
     `);
 

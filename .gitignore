@@ -5,3 +5,4 @@
 /dellg7.pem
 /.env-production
 /.env-development
+/ethereum-etl-data

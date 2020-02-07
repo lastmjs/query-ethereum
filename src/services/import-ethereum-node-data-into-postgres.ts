@@ -1,88 +1,124 @@
 import { postgres } from '../postgres/postgres';
-import { gqlRequest } from '../graphql/graphql';
+import * as fs from 'fs-extra';
+import { Block } from '../graphql/types';
+import { exec } from 'child_process';
+
+const numBlocksToImportFromGeth: number = 100000;
+const numBlocksToExportToPostgres: number = 1000;
 
 export async function startImport() {
     
+    
     const lastBlockNumberinPostgres: number = await getLastBlockNumberInPostgres();
-    await importBlocks(lastBlockNumberinPostgres);
+    
+    await generateBlockCSV(lastBlockNumberinPostgres);
+    
+    const blockCSVFileContents: string = (await fs.readFile('./ethereum-etl-data/blocks.csv')).toString();
 
+    await importBlocks(blockCSVFileContents, lastBlockNumberinPostgres);
 }
 
+function generateBlockCSV(lastBlockNumberInPostgres: number) {
+    return new Promise((resolve) => {
+        console.log('importing from geth');
+        exec(`docker run -v ~/development/query-ethereum/ethereum-etl-data:/ethereum-etl/output ethereum-etl:latest export_blocks_and_transactions --start-block ${lastBlockNumberInPostgres} --end-block ${lastBlockNumberInPostgres + numBlocksToImportFromGeth - 1} --provider-uri http://ec2-34-223-3-112.us-west-2.compute.amazonaws.com:8545 --blocks-output output/blocks.csv`, (err, stdout, stderr) => {
+            console.log('err', err);
 
-// TODO we need to put a base case in here
+            console.log('stdout', stdout);
+            console.log('stderr', stderr);
+        
+            resolve();
+        });
+    });    
+}
+
 // TODO we might want to make this more intelligent, if the blocks are already in the database, we don't want to override them
 // TODO this could occur any time this function is running concurrently with another copy of itself, say once we have multiple gql servers
 async function importBlocks(
+    blockCSVFileContents: string,
     from: number,
-    skip: number = 1000
+    skip: number = numBlocksToExportToPostgres
 ) {
-    // TODO this will never terminate, but right now I am running it manually
+    const blockCSVLines: ReadonlyArray<string> = blockCSVFileContents.split('\n');
+    const blocks: ReadonlyArray<Block> = blockCSVLines.filter((blockCSVLine) => {
+        const blockCSVFields: ReadonlyArray<string> = blockCSVLine.split(',');
 
-    const gqlResult = await gqlRequest(`
-        query {
-            blocks(from: ${from}, to: ${from + skip}) {
-                number
-                hash
-                nonce
-                transactionsRoot
-                transactionCount
-                stateRoot
-                receiptsRoot
-                extraData
-                gasLimit
-                gasUsed
-                timestamp
-                logsBloom
-                mixHash
-                difficulty
-                totalDifficulty
-                ommerCount
-                ommerHash            
-            }
+        return parseInt(blockCSVFields[0]) >= from && parseInt(blockCSVFields[0]) < from + skip;
+    }).map((blockCSVLine: string) => {
+        const blockCSVFields: ReadonlyArray<string> = blockCSVLine.split(',');
+    
+        return {
+            number: parseInt(blockCSVFields[0]),
+            hash: blockCSVFields[1],
+            nonce: blockCSVFields[3],
+            transactionsRoot: blockCSVFields[6],
+            transactionCount: parseInt(blockCSVFields[17]),
+            stateRoot: blockCSVFields[7],
+            receiptsRoot: blockCSVFields[8],
+            extraData: blockCSVFields[13],
+            gasLimit: parseInt(blockCSVFields[14]),
+            gasUsed: parseInt(blockCSVFields[15]),
+            timestamp: new Date(parseInt(blockCSVFields[16]) * 1000).toISOString(),
+            logsBloom: blockCSVFields[5],
+            difficulty: parseInt(blockCSVFields[10]),
+            totalDifficulty: parseInt(blockCSVFields[11]),
+            unclesHash: blockCSVFields[4]
+        };
+    }).sort((a, b) => {
+
+        if (a.number < b.number) {
+            return 1;
         }
-    `);
 
-    const multiValueInsertClause = gqlResult.data.blocks.reduce((result, block, index) => {
+        if (a.number > b.number) {
+            return -1;
+        }
+
+        return 0;
+    });
+
+    if (blocks.length === 0) {
+        console.log('importing complete')
+        return;
+    }
+
+    const multiValueInsertClause = blocks.reduce((result, block, index) => {
         return {
             clause: `${result.clause} (
-                    $${index * 17 + 1},
-                    $${index * 17 + 2},
-                    $${index * 17 + 3},
-                    $${index * 17 + 4},
-                    $${index * 17 + 5},
-                    $${index * 17 + 6},
-                    $${index * 17 + 7},
-                    $${index * 17 + 8},
-                    $${index * 17 + 9},
-                    $${index * 17 + 10},
-                    $${index * 17 + 11},
-                    $${index * 17 + 12},
-                    $${index * 17 + 13},
-                    $${index * 17 + 14},
-                    $${index * 17 + 15},
-                    $${index * 17 + 16},
-                    $${index * 17 + 17}
-                )${index === gqlResult.data.blocks.length - 1 ? '' : ','}
+                    $${index * 15 + 1},
+                    $${index * 15 + 2},
+                    $${index * 15 + 3},
+                    $${index * 15 + 4},
+                    $${index * 15 + 5},
+                    $${index * 15 + 6},
+                    $${index * 15 + 7},
+                    $${index * 15 + 8},
+                    $${index * 15 + 9},
+                    $${index * 15 + 10},
+                    $${index * 15 + 11},
+                    $${index * 15 + 12},
+                    $${index * 15 + 13},
+                    $${index * 15 + 14},
+                    $${index * 15 + 15}
+                )${index === blocks.length - 1 ? '' : ','}
             `,
             variables: [
                 ...result.variables,
-                parseInt(block.number),
+                block.number,
                 block.hash,
                 block.nonce,
                 block.transactionsRoot,
-                block.transactionCount === null ? 0 : block.transactionCount,
+                block.transactionCount,
                 block.stateRoot,
                 block.receiptsRoot,
                 block.extraData,
-                parseInt(block.gasLimit),
-                parseInt(block.gasUsed),
-                new Date(parseInt(block.timestamp) * 1000).toISOString(),
+                block.gasLimit,
+                block.gasUsed,
+                block.timestamp,
                 block.logsBloom,
-                block.mixHash,
-                parseInt(block.difficulty),
-                parseInt(block.totalDifficulty),
-                block.ommerCount === null ? 0 : block.ommerCount,
-                block.ommerHash
+                block.difficulty,
+                block.totalDifficulty,
+                block.unclesHash
             ]
         };
     }, {
@@ -90,6 +126,8 @@ async function importBlocks(
         variables: []
     });
 
+    // TODO we might be able to upsert by block number or something...we need to make sure there can never be duplicates, and it would be nice
+    // TODO if there were duplicates, if this would just handle it and write over that data
     await postgres.query(`
         INSERT INTO 
             block 
@@ -106,31 +144,27 @@ async function importBlocks(
                     gasUsed,
                     timestamp,
                     logsBloom,
-                    mixHash,
                     difficulty,
                     totalDifficulty,
-                    ommerCount,
-                    ommerHash
+                    unclesHash
                 )
                 VALUES
                     ${multiValueInsertClause.clause};
     `, multiValueInsertClause.variables);
 
-    console.log(`imported blocks ${from} - ${from + skip}`);
+    console.log(`imported blocks ${from} - ${from + skip - 1}`);
     console.log(`${((from + skip) / 9300000 * 100).toFixed(2)}% complete`);
 
-    if (gqlResult.data.blocks.length < skip) {
-        console.log('importing complete');
-        return;
-    }
+    // if (blocks.length < skip) {
+    //     console.log('importing complete');
+    //     return;
+    // }
 
-    // await new Promise((resolve) => setTimeout(resolve, 5000));
-
-    await importBlocks(from + skip + 1);
+    await importBlocks(blockCSVFileContents, from + skip);
 }
 
 async function getLastBlockNumberInPostgres(): Promise<number> {
-    const response = await postgres.query(`SELECT number FROM block ORDER BY number DESC LIMIT 1`);
+    const response = await postgres.query(`SELECT number FROM block ORDER BY number DESC LIMIT 1;`);
 
     if (response.rows.length === 0) {
         return 0;
