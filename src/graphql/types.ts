@@ -15,14 +15,14 @@ export type Scalars = {
 
 export type Average = {
    __typename?: 'Average',
-  perBlock: Scalars['BigDecimal'],
-  perSecond: Scalars['BigDecimal'],
-  perMinute: Scalars['BigDecimal'],
-  perHour: Scalars['BigDecimal'],
-  perDay: Scalars['BigDecimal'],
-  perWeek: Scalars['BigDecimal'],
-  perMonth: Scalars['BigDecimal'],
-  perYear: Scalars['BigDecimal'],
+  perBlock?: Maybe<Scalars['BigDecimal']>,
+  perSecond?: Maybe<Scalars['BigDecimal']>,
+  perMinute?: Maybe<Scalars['BigDecimal']>,
+  perHour?: Maybe<Scalars['BigDecimal']>,
+  perDay?: Maybe<Scalars['BigDecimal']>,
+  perWeek?: Maybe<Scalars['BigDecimal']>,
+  perMonth?: Maybe<Scalars['BigDecimal']>,
+  perYear?: Maybe<Scalars['BigDecimal']>,
 };
 
 
@@ -105,20 +105,20 @@ export type BlocksWhereInput = {
 
 export type DifficultyStats = {
    __typename?: 'DifficultyStats',
-  total: Scalars['BigInt'],
-  average: Average,
+  total?: Maybe<Scalars['BigInt']>,
+  average?: Maybe<Average>,
 };
 
 export type GasLimitStats = {
    __typename?: 'GasLimitStats',
-  total: Scalars['BigInt'],
-  average: Average,
+  total?: Maybe<Scalars['BigInt']>,
+  average?: Maybe<Average>,
 };
 
 export type GasUsedStats = {
    __typename?: 'GasUsedStats',
-  total: Scalars['BigInt'],
-  average: Average,
+  total?: Maybe<Scalars['BigInt']>,
+  average?: Maybe<Average>,
 };
 
 
@@ -137,6 +137,6 @@ export type QueryBlocksArgs = {
 
 export type TransactionCountStats = {
    __typename?: 'TransactionCountStats',
-  total: Scalars['BigInt'],
-  average: Average,
+  total?: Maybe<Scalars['BigInt']>,
+  average?: Maybe<Average>,
 };

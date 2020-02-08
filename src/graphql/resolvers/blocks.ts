@@ -54,34 +54,34 @@ export async function blocks(
         ...(selectionSetObject.blocks.stats ? {
             stats: {
                 ...(selectionSetObject.blocks.stats.total ? {
-                    total: getStats(sqlQueryResponse.rows, () => new BigNumber(sqlQueryResponse.rows.length)).total
+                    total: getStats(sqlQueryResponse.rows, selectionSetObject.blocks.stats, () => new BigNumber(sqlQueryResponse.rows.length)).total
                 }: {}),
                 ...(selectionSetObject.blocks.stats.average ? {
-                    average: getStats(sqlQueryResponse.rows, () => new BigNumber(sqlQueryResponse.rows.length)).average
+                    average: getStats(sqlQueryResponse.rows, selectionSetObject.blocks.stats, () => new BigNumber(sqlQueryResponse.rows.length)).average
                 }: {}),
                 ...(selectionSetObject.blocks.stats.transactionCount ? {
-                    transactionCount: getStats(sqlQueryResponse.rows, () => {
+                    transactionCount: getStats(sqlQueryResponse.rows, selectionSetObject.blocks.stats.transactionCount, () => {
                         return sqlQueryResponse.rows.reduce((result, row) => {
                             return result.plus(row.transactioncount);
                         }, new BigNumber(0));            
                     })    
                 }: {}),
                 ...(selectionSetObject.blocks.stats.gasLimit ? {
-                    gasLimit: getStats(sqlQueryResponse.rows, () => {
+                    gasLimit: getStats(sqlQueryResponse.rows, selectionSetObject.blocks.stats.gasLimit, () => {
                         return sqlQueryResponse.rows.reduce((result, row) => {
                             return result.plus(row.gaslimit);
                         }, new BigNumber(0));            
                     }),
                 } : {}),
                 ...(selectionSetObject.blocks.stats.gasUsed ? {
-                    gasUsed: getStats(sqlQueryResponse.rows, () => {
+                    gasUsed: getStats(sqlQueryResponse.rows, selectionSetObject.blocks.stats.gasUsed, () => {
                         return sqlQueryResponse.rows.reduce((result, row) => {
                             return result.plus(row.gasused);
                         }, new BigNumber(0));            
                     }),
                 } : {}),
                 ...(selectionSetObject.blocks.stats.difficulty ? {
-                    difficulty: getStats(sqlQueryResponse.rows, () => {
+                    difficulty: getStats(sqlQueryResponse.rows, selectionSetObject.blocks.stats.difficulty, () => {
                         return sqlQueryResponse.rows.reduce((result, row) => {
                             return result.plus(row.difficulty);
                         }, new BigNumber(0));            
@@ -171,7 +171,7 @@ function constructWhereClause(args: any, variableStartNumber: number): Readonly<
     return whereClauseResult;
 }
 
-function getStats(blocks: ReadonlyArray<Block>, totaler: () => BigNumber) {
+function getStats(blocks: ReadonlyArray<Block>, selectionSetObject: any, totaler: () => BigNumber) {
 
     if (blocks.length === 0) {
         return {
@@ -197,17 +197,37 @@ function getStats(blocks: ReadonlyArray<Block>, totaler: () => BigNumber) {
     const total: BigNumber = totaler();
 
     return {
-        total,
-        average: {
-            perBlock: total.dividedBy(blocks.length),
-            perSecond: deltaMilliseconds.eq(0) ? 0 : total.dividedBy(deltaMilliseconds.dividedBy(1000)).toFixed(2),
-            perMinute: deltaMilliseconds.eq(0) ? 0 : total.dividedBy(deltaMilliseconds.dividedBy(1000 * 60)).toFixed(2),
-            perHour: deltaMilliseconds.eq(0) ? 0 : total.dividedBy(deltaMilliseconds.dividedBy(1000 * 60 * 60)).toFixed(2),
-            perDay: deltaMilliseconds.eq(0) ? 0 : total.dividedBy(deltaMilliseconds.dividedBy(1000 * 60 * 60 * 24)).toFixed(2),
-            perWeek: deltaMilliseconds.eq(0) ? 0 : total.dividedBy(deltaMilliseconds.dividedBy(1000 * 60 * 60 * 24 * 7)).toFixed(2),
-            perMonth: deltaMilliseconds.eq(0) ? 0 : total.dividedBy(deltaMilliseconds.dividedBy(1000 * 60 * 60 * 24 * 30)).toFixed(2),
-            perYear: deltaMilliseconds.eq(0) ? 0 : total.dividedBy(deltaMilliseconds.dividedBy(1000 * 60 * 60 * 24 * 365)).toFixed(2)    
-        }
+        ...(selectionSetObject.total ? {
+            total
+        }: {}),
+        ...(selectionSetObject.average ? {
+            average: {
+                ...(selectionSetObject.average.perBlock ? {
+                    perBlock: total.dividedBy(blocks.length)
+                }: {}),
+                ...(selectionSetObject.average.perSecond ? {
+                    perSecond: deltaMilliseconds.eq(0) ? 0 : total.dividedBy(deltaMilliseconds.dividedBy(1000)).toFixed(2)
+                }: {}),
+                ...(selectionSetObject.average.perMinute ? {
+                    perMinute: deltaMilliseconds.eq(0) ? 0 : total.dividedBy(deltaMilliseconds.dividedBy(1000 * 60)).toFixed(2)
+                }: {}),
+                ...(selectionSetObject.average.perHour ? {
+                    perHour: deltaMilliseconds.eq(0) ? 0 : total.dividedBy(deltaMilliseconds.dividedBy(1000 * 60 * 60)).toFixed(2)
+                }: {}),
+                ...(selectionSetObject.average.perDay ? {
+                    perDay: deltaMilliseconds.eq(0) ? 0 : total.dividedBy(deltaMilliseconds.dividedBy(1000 * 60 * 60 * 24)).toFixed(2)
+                }: {}),
+                ...(selectionSetObject.average.perWeek ? {
+                    perWeek: deltaMilliseconds.eq(0) ? 0 : total.dividedBy(deltaMilliseconds.dividedBy(1000 * 60 * 60 * 24 * 7)).toFixed(2)
+                }: {}),
+                ...(selectionSetObject.average.perMonth ? {
+                    perMonth: deltaMilliseconds.eq(0) ? 0 : total.dividedBy(deltaMilliseconds.dividedBy(1000 * 60 * 60 * 24 * 30)).toFixed(2)
+                }: {}),
+                ...(selectionSetObject.average.perYear ? {
+                    perYear: deltaMilliseconds.eq(0) ? 0 : total.dividedBy(deltaMilliseconds.dividedBy(1000 * 60 * 60 * 24 * 365)).toFixed(2)
+                }: {})    
+            }
+        }: {})
     };            
 }
 
