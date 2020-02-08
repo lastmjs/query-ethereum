@@ -19,7 +19,9 @@
     "postgres-create-database-development": ". ./.env-development && ts-node --transpile-only src/postgres/create-database.ts",
     "postgres-create-database-production": ". ./.env-production && ts-node --transpile-only src/postgres/create-database.ts",
     "generate-graphql-types": "graphql-codegen",
-    "ethereum-etl": "docker run -v ~/development/query-ethereum/ethereum-etl-data:/ethereum-etl/output ethereum-etl:latest export_blocks_and_transactions --start-block 0 --end-block 1000 --provider-uri http://172.17.0.1:8545 --blocks-output output/blocks.csv"
+    "ethereum-etl": "docker run -v ~/development/query-ethereum/ethereum-etl-data:/ethereum-etl/output ethereum-etl:latest export_blocks_and_transactions --start-block 0 --end-block 1000 --provider-uri http://172.17.0.1:8545 --blocks-output output/blocks.csv",
+    "ssh-geth": "ssh -i \"dellg7.pem\" ubuntu@ec2-34-223-3-112.us-west-2.compute.amazonaws.com",
+    "ssh-graphql": "ssh -i \"dellg7.pem\" ubuntu@ec2-54-191-146-26.us-west-2.compute.amazonaws.com"
   },
   "repository": {
     "type": "git",

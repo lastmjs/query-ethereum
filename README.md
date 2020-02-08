@@ -39,3 +39,17 @@ sudo chmod 666 /var/run/docker.sock
 ```
 
 Exit the terminal and re-enter
+
+# Setting up Node.js server in production
+
+You need to create a .env-production file in the root directory with the environment variables
+
+You also need to install docker and create the ethereum-etl image
+
+```bash
+git clone
+npm install
+npm run startup-production
+npx pm2 save
+npx pm2 startup
+```

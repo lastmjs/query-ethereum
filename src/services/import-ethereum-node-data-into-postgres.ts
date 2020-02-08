@@ -3,7 +3,7 @@ import * as fs from 'fs-extra';
 import { Block } from '../graphql/types';
 import { exec } from 'child_process';
 
-const numBlocksToImportFromGeth: number = 10000;
+const numBlocksToImportFromGeth: number = 50000;
 const numBlocksToExportToPostgres: number = 1000;
 
 export async function startImport() {
