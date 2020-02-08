@@ -120,7 +120,9 @@ const resolvers: Readonly<IResolvers> = {
 
 const server = new ApolloServer({
     typeDefs,
-    resolvers
+    resolvers,
+    introspection: true,
+    playground: true
 });
 
 server.listen({
