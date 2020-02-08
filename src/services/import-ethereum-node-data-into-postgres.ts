@@ -3,10 +3,10 @@ import * as fs from 'fs-extra';
 import { Block } from '../graphql/types';
 import { exec } from 'child_process';
 
-const numBlocksToImportFromGeth: number = 10000;
-const gethBatchSize: number = 100;
-const gethWorkers: number = 2;
-const numBlocksToExportToPostgres: number = 1000;
+const numBlocksToImportFromGeth: number = parseInt(process.env.QUERY_ETHEREUM_GETH_NUM_BLOCKS_PER_IMPORT || '');
+const gethBatchSize: number = parseInt(process.env.QUERY_ETHEREUM_GETH_BATCH_SIZE || '');
+const gethWorkers: number = parseInt(process.env.QUERY_ETHEREUM_GETH_WORKERS || '');
+const numBlocksToExportToPostgres: number = parseInt(process.env.QUERY_ETHEREUM_POSTGRES_NUM_BLOCKS_PER_EXPORT || '');
 
 export async function startImport() {
     
@@ -43,6 +43,7 @@ function generateBlockCSV(lastBlockNumberInPostgres: number) {
     });    
 }
 
+// TODO we could probably send off all of these concurrently to the database, that might make things a bit faster
 // TODO we might want to make this more intelligent, if the blocks are already in the database, we don't want to override them
 // TODO this could occur any time this function is running concurrently with another copy of itself, say once we have multiple gql servers
 async function importBlocks(
