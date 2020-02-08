@@ -129,7 +129,7 @@ server.listen({
     console.log(`GraphQL server ready: ${url}`);
 });
 
-let importing = true;
+let importing = false;
 
 setInterval(async () => {
 
