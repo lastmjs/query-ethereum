@@ -8,14 +8,14 @@ const gethBatchSize: number = parseInt(process.env.QUERY_ETHEREUM_GETH_BATCH_SIZ
 const gethWorkers: number = parseInt(process.env.QUERY_ETHEREUM_GETH_WORKERS || '');
 const numBlocksToExportToPostgres: number = parseInt(process.env.QUERY_ETHEREUM_POSTGRES_NUM_BLOCKS_PER_EXPORT || '');
 
-console.log('numBlocksToImportFromGeth', numBlocksToImportFromGeth);
-console.log('gethBatchSize', gethBatchSize);
-console.log('gethWorkers', gethWorkers);
-console.log('numBlocksToExportToPostgres', numBlocksToExportToPostgres);
-
 export async function startImport() {
     
     try {
+        console.log('numBlocksToImportFromGeth', numBlocksToImportFromGeth);
+        console.log('gethBatchSize', gethBatchSize);
+        console.log('gethWorkers', gethWorkers);
+        console.log('numBlocksToExportToPostgres', numBlocksToExportToPostgres);
+        
         console.log('retrieving last block from postgres');
 
         const lastBlockNumberinPostgres: number = await getLastBlockNumberInPostgres();
@@ -184,6 +184,7 @@ async function importBlocks(
     await importBlocks(blockCSVFileContents, from + skip);
 }
 
+// TODO this isn't really the last block number in postgres, it's the next block number not in postgres, or the last number not in postgres
 async function getLastBlockNumberInPostgres(): Promise<number> {
     const response = await postgres.query(`SELECT number FROM block ORDER BY number DESC LIMIT 1;`);
 
