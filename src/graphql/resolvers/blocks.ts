@@ -24,8 +24,6 @@ export async function blocks(
     // TODO selecting extra fields for the stats selection sets
     const sqlQuery1: string = `DECLARE liahona SCROLL CURSOR FOR SELECT * FROM block ${whereClauseResult === 'NO_WHERE_PRESENT' ? '' : `WHERE ${whereClauseResult.whereClause}`} ORDER BY timestamp DESC;`;
 
-    console.log(sqlQuery1);
-
     await postgres.query({
         text: sqlQuery1,
         values: [...(whereClauseResult === 'NO_WHERE_PRESENT' ? [] : whereClauseResult.variables)]
@@ -33,17 +31,12 @@ export async function blocks(
 
     const sqlQuery2: string = `${getFetchStatement(first, last)};`;
 
-    console.log(sqlQuery2)
-
     const sqlQueryResponse2 = await postgres.query({
         text: sqlQuery2,
         values: []
     });
 
-    console.log(sqlQueryResponse2)
-
     const sqlQueryResponse = sqlQueryResponse2.length === 3 ? sqlQueryResponse2[2] : sqlQueryResponse2;
-    console.log(sqlQueryResponse);
 
     await postgres.query('COMMIT');
 
