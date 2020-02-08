@@ -50,19 +50,18 @@ export type Block = {
 
 export type BlocksResult = {
    __typename?: 'BlocksResult',
-  stats: BlockStats,
-  items: Array<Block>,
+  stats?: Maybe<BlockStats>,
+  items?: Maybe<Array<Block>>,
 };
 
 export type BlockStats = {
    __typename?: 'BlockStats',
-  total: Scalars['BigInt'],
-  average: Average,
-  transactionCount: TransactionCountStats,
-  gasLimit: GasLimitStats,
-  gasUsed: GasUsedStats,
-  difficulty: DifficultyStats,
-  ommerCount: OmmerCountStats,
+  total?: Maybe<Scalars['BigInt']>,
+  average?: Maybe<Average>,
+  transactionCount?: Maybe<TransactionCountStats>,
+  gasLimit?: Maybe<GasLimitStats>,
+  gasUsed?: Maybe<GasUsedStats>,
+  difficulty?: Maybe<DifficultyStats>,
 };
 
 export type BlocksWhereInput = {
@@ -101,11 +100,6 @@ export type BlocksWhereInput = {
   totalDifficulty_gte?: Maybe<Scalars['BigInt']>,
   totalDifficulty_lt?: Maybe<Scalars['BigInt']>,
   totalDifficulty_lte?: Maybe<Scalars['BigInt']>,
-  ommerCount?: Maybe<Scalars['Int']>,
-  ommerCount_gt?: Maybe<Scalars['Int']>,
-  ommerCount_gte?: Maybe<Scalars['Int']>,
-  ommerCount_lt?: Maybe<Scalars['Int']>,
-  ommerCount_lte?: Maybe<Scalars['Int']>,
 };
 
 
@@ -128,12 +122,6 @@ export type GasUsedStats = {
 };
 
 
-
-export type OmmerCountStats = {
-   __typename?: 'OmmerCountStats',
-  total: Scalars['BigInt'],
-  average: Average,
-};
 
 export type Query = {
    __typename?: 'Query',

@@ -2,7 +2,12 @@ import {
     BlocksResult,
     Block
 } from '../types';
-import { GraphQLResolveInfo } from 'graphql';
+import { 
+    GraphQLResolveInfo,
+    OperationDefinitionNode,
+    SelectionSetNode,
+    SelectionNode
+} from 'graphql';
 import { postgres } from '../../postgres/postgres';
 import BigNumber from 'bignumber.js';
 
@@ -15,6 +20,10 @@ export async function blocks(
     const first: number | undefined = args.first;
     const last: number | undefined = args.last;
     const wherePresent: boolean = args.where !== undefined && args.where !== null;
+
+    const selectionSetObject = getSelectionSetObjectFromInfo(info);
+
+    console.log('selectionSetObject', selectionSetObject);
 
     const whereClauseResult: Readonly<WhereClauseResult> | 'NO_WHERE_PRESENT' = wherePresent ? constructWhereClause(args, 1) : 'NO_WHERE_PRESENT';
 
@@ -42,36 +51,45 @@ export async function blocks(
 
     // TODO do not calculate all of the stats all of the time, only when selected
     return {
-        stats: {
-            total: getStats(sqlQueryResponse.rows, () => new BigNumber(sqlQueryResponse.rows.length)).total,
-            average: getStats(sqlQueryResponse.rows, () => new BigNumber(sqlQueryResponse.rows.length)).average,
-            transactionCount: getStats(sqlQueryResponse.rows, () => {
-                return sqlQueryResponse.rows.reduce((result, row) => {
-                    return result.plus(row.transactioncount);
-                }, new BigNumber(0));            
-            }),
-            gasLimit: getStats(sqlQueryResponse.rows, () => {
-                return sqlQueryResponse.rows.reduce((result, row) => {
-                    return result.plus(row.gaslimit);
-                }, new BigNumber(0));            
-            }),
-            gasUsed: getStats(sqlQueryResponse.rows, () => {
-                return sqlQueryResponse.rows.reduce((result, row) => {
-                    return result.plus(row.gasused);
-                }, new BigNumber(0));            
-            }),
-            difficulty: getStats(sqlQueryResponse.rows, () => {
-                return sqlQueryResponse.rows.reduce((result, row) => {
-                    return result.plus(row.difficulty);
-                }, new BigNumber(0));            
-            }),
-            ommerCount: getStats(sqlQueryResponse.rows, () => {
-                return sqlQueryResponse.rows.reduce((result, row) => {
-                    return result.plus(row.ommercount);
-                }, new BigNumber(0));            
-            })
-        },
-        items: sqlQueryResponse.rows
+        ...(selectionSetObject.blocks.stats ? {
+            stats: {
+                ...(selectionSetObject.blocks.stats.total ? {
+                    total: getStats(sqlQueryResponse.rows, () => new BigNumber(sqlQueryResponse.rows.length)).total
+                }: {}),
+                ...(selectionSetObject.blocks.stats.average ? {
+                    average: getStats(sqlQueryResponse.rows, () => new BigNumber(sqlQueryResponse.rows.length)).average
+                }: {}),
+                ...(selectionSetObject.blocks.stats.transactionCount ? {
+                    transactionCount: getStats(sqlQueryResponse.rows, () => {
+                        return sqlQueryResponse.rows.reduce((result, row) => {
+                            return result.plus(row.transactioncount);
+                        }, new BigNumber(0));            
+                    })    
+                }: {}),
+                ...(selectionSetObject.blocks.stats.gasLimit ? {
+                    gasLimit: getStats(sqlQueryResponse.rows, () => {
+                        return sqlQueryResponse.rows.reduce((result, row) => {
+                            return result.plus(row.gaslimit);
+                        }, new BigNumber(0));            
+                    }),
+                } : {}),
+                ...(selectionSetObject.blocks.stats.gasUsed ? {
+                    gasUsed: getStats(sqlQueryResponse.rows, () => {
+                        return sqlQueryResponse.rows.reduce((result, row) => {
+                            return result.plus(row.gasused);
+                        }, new BigNumber(0));            
+                    }),
+                } : {}),
+                ...(selectionSetObject.blocks.stats.difficulty ? {
+                    difficulty: getStats(sqlQueryResponse.rows, () => {
+                        return sqlQueryResponse.rows.reduce((result, row) => {
+                            return result.plus(row.difficulty);
+                        }, new BigNumber(0));            
+                    }),
+                }: {})
+            }
+        } : {}),
+        ...(selectionSetObject.blocks.items ? { items: sqlQueryResponse.rows } : {})
     };
 
 }
@@ -191,6 +209,31 @@ function getStats(blocks: ReadonlyArray<Block>, totaler: () => BigNumber) {
             perYear: deltaMilliseconds.eq(0) ? 0 : total.dividedBy(deltaMilliseconds.dividedBy(1000 * 60 * 60 * 24 * 365)).toFixed(2)    
         }
     };            
+}
+
+function getSelectionSetObjectFromInfo(info: Readonly<GraphQLResolveInfo>): Readonly<any> {
+    
+    if (
+        info.operation.kind === 'OperationDefinition' && 
+        info.operation.operation === 'query'
+    ) {
+        return getSelectionSetObjectFromOperationDefinitionNodeSelectionSet(info.operation.selectionSet);
+    }
+
+    return {};
+}
+
+function getSelectionSetObjectFromOperationDefinitionNodeSelectionSet(selectionSet: Readonly<SelectionSetNode>): Readonly<{}> {
+    return selectionSet.selections.reduce((result, selection) => {
+        if (selection.kind === 'Field') {
+            return {
+                ...result,
+                [selection.name.value]: selection.selectionSet === undefined ? true : getSelectionSetObjectFromOperationDefinitionNodeSelectionSet(selection.selectionSet)
+            };
+        }
+
+        return result;
+    }, {});
 }
 
 // type SelectClauseResult = {

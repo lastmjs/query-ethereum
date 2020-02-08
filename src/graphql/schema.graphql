@@ -70,27 +70,20 @@ input BlocksWhereInput {
     totalDifficulty_gte: BigInt
     totalDifficulty_lt: BigInt
     totalDifficulty_lte: BigInt
-
-    ommerCount: Int
-    ommerCount_gt: Int
-    ommerCount_gte: Int
-    ommerCount_lt: Int
-    ommerCount_lte: Int
 }
 
 type BlocksResult {
-    stats: BlockStats!
-    items: [Block!]!
+    stats: BlockStats
+    items: [Block!]
 }
 
 type BlockStats {
-    total: BigInt!
-    average: Average!
-    transactionCount: TransactionCountStats!
-    gasLimit: GasLimitStats!
-    gasUsed: GasUsedStats!
-    difficulty: DifficultyStats!
-    ommerCount: OmmerCountStats!
+    total: BigInt
+    average: Average
+    transactionCount: TransactionCountStats
+    gasLimit: GasLimitStats
+    gasUsed: GasUsedStats
+    difficulty: DifficultyStats
 }
 
 type TransactionCountStats {
@@ -109,11 +102,6 @@ type GasUsedStats {
 }
 
 type DifficultyStats {
-    total: BigInt!
-    average: Average!
-}
-
-type OmmerCountStats {
     total: BigInt!
     average: Average!
 }

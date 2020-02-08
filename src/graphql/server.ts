@@ -133,7 +133,10 @@ let importing = false;
 
 setInterval(async () => {
 
-    if (importing === false) {
+    if (
+        process.env.NODE_ENV === 'production' &&
+        importing === false
+    ) {
         importing = true;
         const startTime = new Date();
         await startImport();
