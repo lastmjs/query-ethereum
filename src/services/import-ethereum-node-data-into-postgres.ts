@@ -3,7 +3,7 @@ import * as fs from 'fs-extra';
 import { Block } from '../graphql/types';
 import { exec } from 'child_process';
 
-const numBlocksToImportFromGeth: number = 100000;
+const numBlocksToImportFromGeth: number = 1000000;
 const gethBatchSize: number = 100;
 const numBlocksToExportToPostgres: number = 1000;
 
