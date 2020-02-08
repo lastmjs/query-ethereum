@@ -33,6 +33,8 @@ export async function blocks(
 
     const sqlQuery2: string = `${getFetchStatement(first, last)};`;
 
+    console.log(sqlQuery2)
+
     const sqlQueryResponse2 = await postgres.query({
         text: sqlQuery2,
         values: []
