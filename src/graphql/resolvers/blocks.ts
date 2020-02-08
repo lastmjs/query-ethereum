@@ -23,15 +23,25 @@ export async function blocks(
 
     const selectionSetObject = getSelectionSetObjectFromInfo(info);
 
-    console.log('selectionSetObject', selectionSetObject);
+    // console.log('selectionSetObject', selectionSetObject);
 
     const whereClauseResult: Readonly<WhereClauseResult> | 'NO_WHERE_PRESENT' = wherePresent ? constructWhereClause(args, 1) : 'NO_WHERE_PRESENT';
 
     await postgres.query('BEGIN');
 
+    const selectClause = ['timestamp', ...getSelectClause(selectionSetObject)];
+
+    // console.log(selectClause.length);
+    // console.log(selectClause.join(','))
+    // console.log('selectClause', selectClause);
+
     // TODO we will want to optimize eventually and only select what is necessary...but this will require sql injection sanitization and 
     // TODO selecting extra fields for the stats selection sets
-    const sqlQuery1: string = `DECLARE liahona SCROLL CURSOR FOR SELECT * FROM block ${whereClauseResult === 'NO_WHERE_PRESENT' ? '' : `WHERE ${whereClauseResult.whereClause}`} ORDER BY timestamp DESC;`;
+    // TODO use variables for column names?
+    // TODO use the check thingy
+    const sqlQuery1: string = `DECLARE liahona SCROLL CURSOR FOR SELECT ${selectClause.join(',')} FROM block ${whereClauseResult === 'NO_WHERE_PRESENT' ? '' : `WHERE ${whereClauseResult.whereClause}`} ORDER BY timestamp DESC;`;
+
+    console.log(sqlQuery1);
 
     await postgres.query({
         text: sqlQuery1,
@@ -112,6 +122,24 @@ type WhereClauseResult = {
     variables: ReadonlyArray<any>;
 };
 
+const supportedFieldNames = [
+    'number',
+    'hash',
+    'nonce',
+    'transactionsroot',
+    'transactioncount',
+    'stateroot',
+    'receiptsroot',
+    'extradata',
+    'gaslimit',
+    'gasused',
+    'timestamp',
+    'logsbloom',
+    'difficulty',
+    'totaldifficulty',
+    'uncleshash'   
+];
+
 // TODO fix sql injection for column names in where clause, check against predetermined list
 function constructWhereClause(args: any, variableStartNumber: number): Readonly<WhereClauseResult> {
 
@@ -125,26 +153,6 @@ function constructWhereClause(args: any, variableStartNumber: number): Readonly<
         'lte': '<='
     };    
 
-    const supportedFieldNames = [
-        'number',
-        'hash',
-        'nonce',
-        'transactionsRoot',
-        'transactionCount',
-        'stateRoot',
-        'receiptsRoot',
-        'extraData',
-        'gasLimit',
-        'gasUsed',
-        'timestamp',
-        'logsBloom',
-        'mixHash',
-        'difficulty',
-        'totalDifficulty',
-        'ommerCount',
-        'ommerHash'    
-    ];
-
     const whereClauseResult: Readonly<WhereClauseResult> = Object.entries(args.where).reduce((result, entry, index) => {    
         const fieldName: string = entry[0];
         const fieldValue: any = entry[1];
@@ -155,7 +163,7 @@ function constructWhereClause(args: any, variableStartNumber: number): Readonly<
         const operation: '=' | '>' | '>=' | '<' | '<=' = suffixMap[fieldNameSuffix];
 
         // TODO this protects us from SQL injection. Ensure that this is good enough
-        if (supportedFieldNames.indexOf(fieldNamePrefix) === -1) {
+        if (supportedFieldNames.indexOf(fieldNamePrefix.toLowerCase()) === -1) {
             throw new Error('Not supported');
         }
 
@@ -203,7 +211,7 @@ function getStats(blocks: ReadonlyArray<Block>, selectionSetObject: any, totaler
         ...(selectionSetObject.average ? {
             average: {
                 ...(selectionSetObject.average.perBlock ? {
-                    perBlock: total.dividedBy(blocks.length)
+                    perBlock: total.dividedBy(blocks.length).toFixed(2)
                 }: {}),
                 ...(selectionSetObject.average.perSecond ? {
                     perSecond: deltaMilliseconds.eq(0) ? 0 : total.dividedBy(deltaMilliseconds.dividedBy(1000)).toFixed(2)
@@ -282,3 +290,11 @@ function getSelectionSetObjectFromOperationDefinitionNodeSelectionSet(selectionS
 //         variables: variables
 //     };
 // }
+
+function getSelectClause(selectionSetObject) {
+    return Object.entries(selectionSetObject).reduce((result, selectionSetObjectEntry) => {
+        return [...result, selectionSetObjectEntry[0].toLowerCase(), ...getSelectClause(selectionSetObjectEntry[1])];
+    }, []).filter((x) => {
+        return supportedFieldNames.includes(x);
+    });
+}
