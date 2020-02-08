@@ -131,8 +131,6 @@ server.listen({
 
 let importing = false;
 
-// TODO import data from the main chain every so often
-// TODO do not run this if the import is already running
 setInterval(async () => {
 
     if (importing === false) {

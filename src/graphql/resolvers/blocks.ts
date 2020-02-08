@@ -12,25 +12,38 @@ export async function blocks(
     context: any, 
     info: Readonly<GraphQLResolveInfo>
 ): Promise<Readonly<BlocksResult>> {
+    const first: number | undefined = args.first;
+    const last: number | undefined = args.last;
     const wherePresent: boolean = args.where !== undefined && args.where !== null;
 
     const whereClauseResult: Readonly<WhereClauseResult> | 'NO_WHERE_PRESENT' = wherePresent ? constructWhereClause(args, 1) : 'NO_WHERE_PRESENT';
 
+    await postgres.query('BEGIN');
+
     // TODO we will want to optimize eventually and only select what is necessary...but this will require sql injection sanitization and 
     // TODO selecting extra fields for the stats selection sets
-    const sqlQuery: string = `
-        SELECT 
-            * 
-                FROM block 
-                    ${whereClauseResult === 'NO_WHERE_PRESENT' ? '' : `WHERE ${whereClauseResult.whereClause}`} 
-                        ORDER BY 
-                            timestamp DESC;
-    `;
+    const sqlQuery1: string = `DECLARE liahona SCROLL CURSOR FOR SELECT * FROM block ${whereClauseResult === 'NO_WHERE_PRESENT' ? '' : `WHERE ${whereClauseResult.whereClause}`} ORDER BY timestamp DESC;`;
 
-    const sqlQueryResponse = await postgres.query({
-        text: sqlQuery,
+    console.log(sqlQuery1);
+
+    await postgres.query({
+        text: sqlQuery1,
         values: [...(whereClauseResult === 'NO_WHERE_PRESENT' ? [] : whereClauseResult.variables)]
     });
+
+    const sqlQuery2: string = `${getFetchStatement(first, last)};`;
+
+    const sqlQueryResponse2 = await postgres.query({
+        text: sqlQuery2,
+        values: []
+    });
+
+    console.log(sqlQueryResponse2)
+
+    const sqlQueryResponse = sqlQueryResponse2.length === 3 ? sqlQueryResponse2[2] : sqlQueryResponse2;
+    console.log(sqlQueryResponse);
+
+    await postgres.query('COMMIT');
 
     // TODO do not calculate all of the stats all of the time, only when selected
     return {
@@ -66,6 +79,19 @@ export async function blocks(
         items: sqlQueryResponse.rows
     };
 
+}
+
+// TODO sql injection, fix the first and last interpolation
+function getFetchStatement(first: number | undefined, last: number | undefined): string {
+    if (first !== undefined) {
+        return `MOVE FORWARD ALL FROM liahona; MOVE BACKWARD ${first === 0 ? first : first + 1} FROM liahona; FETCH FORWARD ${first} FROM liahona`;
+    }
+
+    if (last !== undefined) {
+        return `FETCH FORWARD ${last} FROM liahona`;
+    }
+
+    return 'FETCH ALL FROM liahona';
 }
 
 type WhereClauseResult = {

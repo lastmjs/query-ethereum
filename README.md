@@ -32,5 +32,10 @@ sudo apt install docker.io
 sudo groupadd docker
 sudo usermod -aG docker ${USER}
 ```
+If permissions are still messed up, you could try just changing the permissions on the docker file thing
+
+```bash
+sudo chmod 666 /var/run/docker.sock
+```
 
 Exit the terminal and re-enter

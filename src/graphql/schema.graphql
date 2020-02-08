@@ -5,7 +5,7 @@ scalar Hex
 scalar Date
 
 type Query {
-    blocks(where: BlocksWhereInput): BlocksResult!
+    blocks(where: BlocksWhereInput, last: Int, first: Int): BlocksResult!
 }
 
 type Block {

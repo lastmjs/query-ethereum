@@ -142,7 +142,9 @@ export type Query = {
 
 
 export type QueryBlocksArgs = {
-  where?: Maybe<BlocksWhereInput>
+  where?: Maybe<BlocksWhereInput>,
+  last?: Maybe<Scalars['Int']>,
+  first?: Maybe<Scalars['Int']>
 };
 
 export type TransactionCountStats = {
