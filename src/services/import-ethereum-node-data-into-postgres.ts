@@ -36,8 +36,8 @@ export async function startImport() {
 function generateBlockCSV(lastBlockNumberInPostgres: number) {
     return new Promise((resolve, reject) => {
         console.log('importing from geth');
-        console.log(`docker run -v ${process.env.QUERY_ETHEREUM_ETHEREUM_ETL_DATA_DIR}:/ethereum-etl/output ethereum-etl:latest export_blocks_and_transactions --max-workers ${gethWorkers} --start-block ${lastBlockNumberInPostgres} --end-block ${lastBlockNumberInPostgres + numBlocksToImportFromGeth - 1} --provider-uri ${process.env.QUERY_ETHERUM_GETH_RPC_ORIGIN} --batch-size ${gethBatchSize} --blocks-output output/blocks.csv`);
-        exec(`docker run -v ${process.env.QUERY_ETHEREUM_ETHEREUM_ETL_DATA_DIR}:/ethereum-etl/output ethereum-etl:latest export_blocks_and_transactions --max-workers ${gethWorkers} --start-block ${lastBlockNumberInPostgres} --end-block ${lastBlockNumberInPostgres + numBlocksToImportFromGeth - 1} --provider-uri ${process.env.QUERY_ETHERUM_GETH_RPC_ORIGIN} --batch-size ${gethBatchSize} --blocks-output output/blocks.csv`, (err, stdout, stderr) => {
+        console.log(`docker run -v ${process.env.QUERY_ETHEREUM_ETHEREUM_ETL_DATA_DIR}:/ethereum-etl/output ethereum-etl:latest export_blocks_and_transactions --max-workers ${gethWorkers} --start-block ${lastBlockNumberInPostgres} ${numBlocksToImportFromGeth === 0 ? '' : `--end-block ${lastBlockNumberInPostgres + numBlocksToImportFromGeth - 1}`} --provider-uri ${process.env.QUERY_ETHERUM_GETH_RPC_ORIGIN} --batch-size ${gethBatchSize} --blocks-output output/blocks.csv`);
+        exec(`docker run -v ${process.env.QUERY_ETHEREUM_ETHEREUM_ETL_DATA_DIR}:/ethereum-etl/output ethereum-etl:latest export_blocks_and_transactions --max-workers ${gethWorkers} --start-block ${lastBlockNumberInPostgres} ${numBlocksToImportFromGeth === 0 ? '' : `--end-block ${lastBlockNumberInPostgres + numBlocksToImportFromGeth - 1}`} --provider-uri ${process.env.QUERY_ETHERUM_GETH_RPC_ORIGIN} --batch-size ${gethBatchSize} --blocks-output output/blocks.csv`, (err, stdout, stderr) => {
             console.log('err', err);
 
             console.log('stdout', stdout);
