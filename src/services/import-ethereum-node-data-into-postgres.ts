@@ -208,7 +208,7 @@ async function getLastBlockNumberInGeth(): Promise<number> {
     // curl --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' -H "Content-Type: application/json" http://172.31.13.33:8545
     // curl --data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}' -H "Content-Type: application/json" http://172.31.13.33:8545
 
-    const response = await fetch(`${process.env.QUERY_ETHERUM_GETH_RPC_ORIGIN}`, {
+    const response = await fetch(`${process.env.QUERY_ETHERUM_GETH_RPC_ORIGIN}?data='{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}'`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
