@@ -39,11 +39,11 @@ export async function startImport() {
 function generateBlockCSV(lastBlockNumberInPostgres: number, lastBlockNumberInGeth: number) {
     return new Promise((resolve, reject) => {
 
-        const endBlock = lastBlockNumberInPostgres + numBlocksToImportFromGeth - 1 > lastBlockNumberInGeth ? lastBlockNumberInGeth : lastBlockNumberInPostgres + numBlocksToImportFromGeth - 1;
-
-        if (lastBlockNumberInPostgres >= endBlock) {
+        if (lastBlockNumberInPostgres >= lastBlockNumberInGeth) {
             reject('The last block number in postgres is greater than or equal to the last block number in geth...just have to wait');
         }
+
+        const endBlock = lastBlockNumberInPostgres + numBlocksToImportFromGeth - 1 > lastBlockNumberInGeth ? lastBlockNumberInGeth : lastBlockNumberInPostgres + numBlocksToImportFromGeth - 1;
 
         console.log('importing from geth');
         console.log(`docker run -v ${process.env.QUERY_ETHEREUM_ETHEREUM_ETL_DATA_DIR}:/ethereum-etl/output ethereum-etl:latest export_blocks_and_transactions --max-workers ${gethWorkers} --start-block ${lastBlockNumberInPostgres} --end-block ${endBlock} --provider-uri ${process.env.QUERY_ETHERUM_GETH_RPC_ORIGIN} --batch-size ${gethBatchSize} --blocks-output output/blocks.csv`);
@@ -222,7 +222,7 @@ async function getLastBlockNumberInGeth(): Promise<number> {
 
     const responseJSON = await response.json();
 
-    console.log('getLastBlockNumberInGeth', getLastBlockNumberInGeth);
+    console.log('getLastBlockNumberInGeth', responseJSON);
 
     return parseInt(responseJSON.result.currentBlock);
 }
