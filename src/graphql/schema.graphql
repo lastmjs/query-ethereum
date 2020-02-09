@@ -5,7 +5,7 @@ scalar Hex
 scalar Date
 
 type Query {
-    blocks(where: BlocksWhereInput, last: Int, first: Int): BlocksResult!
+    blocks(where: BlocksWhereInput, last: Int, first: Int, groupBy: BLOCK_GROUPING): [BlockGroup!]!
 }
 
 type Block {
@@ -72,7 +72,9 @@ input BlocksWhereInput {
     totalDifficulty_lte: BigInt
 }
 
-type BlocksResult {
+type BlockGroup {
+    startDate: Date
+    endDate: Date
     stats: BlockStats
     items: [Block!]
 }
@@ -115,4 +117,14 @@ type Average {
     perWeek: BigDecimal
     perMonth: BigDecimal
     perYear: BigDecimal
+}
+
+enum BLOCK_GROUPING {
+    SECOND
+    MINUTE
+    HOUR
+    DAY
+    WEEK
+    MONTH
+    YEAR
 }

@@ -1,3 +1,5 @@
+import { Block } from './src/graphql/types';
+
 export type GQLResult = {
     data?: any;
     errors?: any;
@@ -14,4 +16,9 @@ export type FeesToPriceInfoForDay = {
     readonly dateInDay: Date;
     readonly priceInUSD: USD;
     readonly feesInETH: ETH;
+};
+
+export type BlocksForDay = {
+    readonly dateInDay: Date;
+    readonly blocks: ReadonlyArray<Block>;
 };

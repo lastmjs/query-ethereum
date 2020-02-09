@@ -1,6 +1,7 @@
 import {
-    BlocksResult,
-    Block
+    BlockGroup,
+    Block,
+    Block_Grouping
 } from '../types';
 import { 
     GraphQLResolveInfo,
@@ -10,15 +11,19 @@ import {
 } from 'graphql';
 import { postgres } from '../../postgres/postgres';
 import BigNumber from 'bignumber.js';
+import {
+    BlocksForDay
+} from '../../../index.d';
 
 export async function blocks(
     obj: any, 
     args: any, 
     context: any, 
     info: Readonly<GraphQLResolveInfo>
-): Promise<Readonly<BlocksResult>> {
+): Promise<ReadonlyArray<BlockGroup>> {
     const first: number | undefined = args.first;
     const last: number | undefined = args.last;
+    const groupBy: Block_Grouping | undefined = args.groupBy;
     const wherePresent: boolean = args.where !== undefined && args.where !== null;
 
     const selectionSetObject = getSelectionSetObjectFromInfo(info);
@@ -59,49 +64,129 @@ export async function blocks(
 
     await postgres.query('COMMIT');
 
-    // TODO do not calculate all of the stats all of the time, only when selected
-    return {
+    if (groupBy === 'SECOND') {
+        const blocksForDays: ReadonlyArray<BlocksForDay> = getBlocksForDays(sqlQueryResponse.rows, datesInSameSecond);
+
+        console.log('blocksForDays', blocksForDays)
+
+        return blocksForDays.map((blocksForDay) => {
+            return getBlockGroup(blocksForDay.blocks, selectionSetObject);
+        });
+    }
+
+    if (groupBy === 'MINUTE') {
+        const blocksForDays: ReadonlyArray<BlocksForDay> = getBlocksForDays(sqlQueryResponse.rows, datesInSameMinute);
+
+        console.log('blocksForDays', blocksForDays)
+
+        return blocksForDays.map((blocksForDay) => {
+            return getBlockGroup(blocksForDay.blocks, selectionSetObject);
+        });
+    }
+
+    if (groupBy === 'HOUR') {
+        const blocksForDays: ReadonlyArray<BlocksForDay> = getBlocksForDays(sqlQueryResponse.rows, datesInSameHour);
+
+        console.log('blocksForDays', blocksForDays)
+
+        return blocksForDays.map((blocksForDay) => {
+            return getBlockGroup(blocksForDay.blocks, selectionSetObject);
+        });
+    }
+
+    if (groupBy === 'DAY') {
+
+        const blocksForDays: ReadonlyArray<BlocksForDay> = getBlocksForDays(sqlQueryResponse.rows, datesInSameDay);
+
+        console.log('blocksForDays', blocksForDays)
+
+        return blocksForDays.map((blocksForDay) => {
+            return getBlockGroup(blocksForDay.blocks, selectionSetObject);
+        });
+    }
+
+    if (groupBy === 'WEEK') {
+
+        const blocksForDays: ReadonlyArray<BlocksForDay> = getBlocksForDays(sqlQueryResponse.rows, datesInSameWeek);
+
+        console.log('blocksForDays', blocksForDays)
+
+        return blocksForDays.map((blocksForDay) => {
+            return getBlockGroup(blocksForDay.blocks, selectionSetObject);
+        });
+    }
+
+    if (groupBy === 'MONTH') {
+
+        const blocksForDays: ReadonlyArray<BlocksForDay> = getBlocksForDays(sqlQueryResponse.rows, datesInSameMonth);
+
+        console.log('blocksForDays', blocksForDays)
+
+        return blocksForDays.map((blocksForDay) => {
+            return getBlockGroup(blocksForDay.blocks, selectionSetObject);
+        });
+    }
+
+    if (groupBy === 'YEAR') {
+
+        const blocksForDays: ReadonlyArray<BlocksForDay> = getBlocksForDays(sqlQueryResponse.rows, datesInSameYear);
+
+        console.log('blocksForDays', blocksForDays)
+
+        return blocksForDays.map((blocksForDay) => {
+            return getBlockGroup(blocksForDay.blocks, selectionSetObject);
+        });
+    }
+
+    return [
+        getBlockGroup(sqlQueryResponse.rows, selectionSetObject)
+    ];
+}
+
+function getBlockGroup(blocks: Array<Block>, selectionSetObject: any): Readonly<BlockGroup> {
+    return         {
+        startDate: new Date(blocks[0].timestamp),
+        endDate: new Date(blocks[blocks.length - 1].timestamp),
         ...(selectionSetObject.blocks.stats ? {
             stats: {
                 ...(selectionSetObject.blocks.stats.total ? {
-                    total: getStats(sqlQueryResponse.rows, selectionSetObject.blocks.stats, () => new BigNumber(sqlQueryResponse.rows.length)).total
+                    total: getStats(blocks, selectionSetObject.blocks.stats, () => new BigNumber(blocks.length)).total
                 }: {}),
                 ...(selectionSetObject.blocks.stats.average ? {
-                    average: getStats(sqlQueryResponse.rows, selectionSetObject.blocks.stats, () => new BigNumber(sqlQueryResponse.rows.length)).average
+                    average: getStats(blocks, selectionSetObject.blocks.stats, () => new BigNumber(blocks.length)).average
                 }: {}),
                 ...(selectionSetObject.blocks.stats.transactionCount ? {
-                    transactionCount: getStats(sqlQueryResponse.rows, selectionSetObject.blocks.stats.transactionCount, () => {
-                        return sqlQueryResponse.rows.reduce((result, row) => {
+                    transactionCount: getStats(blocks, selectionSetObject.blocks.stats.transactionCount, () => {
+                        return blocks.reduce((result, row) => {
                             return result.plus(row.transactioncount);
                         }, new BigNumber(0));            
                     })    
                 }: {}),
                 ...(selectionSetObject.blocks.stats.gasLimit ? {
-                    gasLimit: getStats(sqlQueryResponse.rows, selectionSetObject.blocks.stats.gasLimit, () => {
-                        return sqlQueryResponse.rows.reduce((result, row) => {
+                    gasLimit: getStats(blocks, selectionSetObject.blocks.stats.gasLimit, () => {
+                        return blocks.reduce((result, row) => {
                             return result.plus(row.gaslimit);
                         }, new BigNumber(0));            
                     }),
                 } : {}),
                 ...(selectionSetObject.blocks.stats.gasUsed ? {
-                    gasUsed: getStats(sqlQueryResponse.rows, selectionSetObject.blocks.stats.gasUsed, () => {
-                        return sqlQueryResponse.rows.reduce((result, row) => {
+                    gasUsed: getStats(blocks, selectionSetObject.blocks.stats.gasUsed, () => {
+                        return blocks.reduce((result, row) => {
                             return result.plus(row.gasused);
                         }, new BigNumber(0));            
                     }),
                 } : {}),
                 ...(selectionSetObject.blocks.stats.difficulty ? {
-                    difficulty: getStats(sqlQueryResponse.rows, selectionSetObject.blocks.stats.difficulty, () => {
-                        return sqlQueryResponse.rows.reduce((result, row) => {
+                    difficulty: getStats(blocks, selectionSetObject.blocks.stats.difficulty, () => {
+                        return blocks.reduce((result, row) => {
                             return result.plus(row.difficulty);
                         }, new BigNumber(0));            
                     }),
                 }: {})
             }
         } : {}),
-        ...(selectionSetObject.blocks.items ? { items: sqlQueryResponse.rows } : {})
+        ...(selectionSetObject.blocks.items ? { items: blocks } : {})
     };
-
 }
 
 // TODO sql injection, fix the first and last interpolation
@@ -297,4 +382,147 @@ function getSelectClause(selectionSetObject) {
     }, []).filter((x) => {
         return supportedFieldNames.includes(x);
     });
+}
+
+function getBlocksForDays(blocks: ReadonlyArray<Block>, dateChecker: (date1: Date, date2: Date) => boolean): ReadonlyArray<BlocksForDay> {
+    return blocks.reduce((result: {
+        currentBlockForDay: {
+            dateInDay: 'NOT_SET' | Date;
+            blocks: ReadonlyArray<Block>;
+        };
+        blocksForDays: ReadonlyArray<BlocksForDay>;
+    }, block, index) => {
+
+        if (result.currentBlockForDay.dateInDay === 'NOT_SET') {
+            return {
+                ...result,
+                currentBlockForDay: {
+                    dateInDay: new Date(block.timestamp),
+                    blocks: [block]
+                }
+            };
+        }
+
+        if (
+            dateChecker(result.currentBlockForDay.dateInDay, new Date(block.timestamp))
+            // result.currentBlockForDay.dateInDay.getUTCFullYear() === new Date(block.timestamp).getUTCFullYear() &&
+            // result.currentBlockForDay.dateInDay.getUTCMonth() === new Date(block.timestamp).getUTCMonth() &&
+            // result.currentBlockForDay.dateInDay.getUTCDate() === new Date(block.timestamp).getUTCDate()
+        ) {
+
+            if (index === blocks.length - 1) {
+                return {
+                    ...result,
+                    blocksForDays: [...result.blocksForDays, {
+                        ...result.currentBlockForDay,
+                        blocks: [...result.currentBlockForDay.blocks, block]
+                    }]
+                }
+            }
+            else {
+                return {
+                    ...result,
+                    currentBlockForDay: {
+                        ...result.currentBlockForDay,
+                        blocks: [...result.currentBlockForDay.blocks, block]
+                    }
+                };
+            }
+        }
+
+        return {
+            ...result,
+            currentBlockForDay: {
+                dateInDay: new Date(block.timestamp),
+                blocks: [block]
+            },
+            blocksForDays: [...result.blocksForDays, result.currentBlockForDay]
+        };
+
+        // const currentDateInDay: Date = (
+        //     result.currentBlockForDay === 'NOT_SET' ||
+        //     result.currentDateInDay.getFullYear() !== new Date(block.timestamp).getFullYear() ||
+        //     result.currentDateInDay.getMonth() !== new Date(block.timestamp).getMonth() ||
+        //     result.currentDateInDay.getDate() !== new Date(block.timestamp).getDate()
+        // ) ? new Date(block.timestamp) : result.currentDateInDay;
+
+        // return {
+        //     ...result,
+        //     currentDateInDay,
+        //     blocksForDays: [...result.blocksForDays, {
+        //         dateInDay: currentDateInDay,
+        //         block
+        //     }]
+        // };
+    }, {
+        currentBlockForDay: {
+            dateInDay: 'NOT_SET',
+            blocks: []
+        },
+        blocksForDays: []
+    }).blocksForDays;
+}
+
+function datesInSameSecond(date1: Date, date2: Date): boolean {
+    return (
+        date1.getUTCFullYear() === date2.getUTCFullYear() &&
+        date1.getUTCMonth() === date2.getUTCMonth() &&
+        date1.getUTCDate() === date2.getUTCDate() &&
+        date1.getUTCHours() === date2.getUTCHours() &&
+        date1.getUTCSeconds() === date2.getUTCSeconds()
+    );
+}
+
+function datesInSameMinute(date1: Date, date2: Date): boolean {
+    return (
+        date1.getUTCFullYear() === date2.getUTCFullYear() &&
+        date1.getUTCMonth() === date2.getUTCMonth() &&
+        date1.getUTCDate() === date2.getUTCDate() &&
+        date1.getUTCHours() === date2.getUTCHours() &&
+        date1.getUTCMinutes() === date2.getUTCMinutes()
+    );
+}
+
+function datesInSameHour(date1: Date, date2: Date): boolean {
+    return (
+        date1.getUTCFullYear() === date2.getUTCFullYear() &&
+        date1.getUTCMonth() === date2.getUTCMonth() &&
+        date1.getUTCDate() === date2.getUTCDate() &&
+        date1.getUTCHours() === date2.getUTCHours()
+    );
+}
+
+function datesInSameDay(date1: Date, date2: Date): boolean {
+    return (
+        date1.getUTCFullYear() === date2.getUTCFullYear() &&
+        date1.getUTCMonth() === date2.getUTCMonth() &&
+        date1.getUTCDate() === date2.getUTCDate()
+    );
+}
+
+function datesInSameWeek(date1: Date, date2: Date): boolean {
+
+    const date1NearestSundayInThePast: Date = new Date(date1.getUTCFullYear(), date1.getUTCMonth(), date1.getUTCDate() - date1.getUTCDay());
+    const date1NearestSundayInTheFuture: Date = new Date(date1.getUTCFullYear(), date1.getUTCMonth(), date1.getUTCDate() + 7 - date1.getUTCDay());
+
+    const date2NearestSundayInThePast: Date = new Date(date2.getUTCFullYear(), date2.getUTCMonth(), date2.getUTCDate() - date2.getUTCDay());
+    const date2NearestSundayInTheFuture: Date = new Date(date2.getUTCFullYear(), date2.getUTCMonth(), date2.getUTCDate() + 7 - date2.getUTCDay());
+
+    return (
+        datesInSameDay(date1NearestSundayInThePast, date2NearestSundayInThePast) &&
+        datesInSameDay(date1NearestSundayInTheFuture, date2NearestSundayInTheFuture)
+    );
+}
+
+function datesInSameMonth(date1: Date, date2: Date): boolean {
+    return (
+        date1.getUTCFullYear() === date2.getUTCFullYear() &&
+        date1.getUTCMonth() === date2.getUTCMonth()
+    );
+}
+
+function datesInSameYear(date1: Date, date2: Date): boolean {
+    return (
+        date1.getUTCFullYear() === date2.getUTCFullYear()
+    );
 }

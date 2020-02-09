@@ -13,7 +13,7 @@
     "geth-main-no-sync": "docker run -it -p 8547:8547 -p 8545:8545 -v ~/development/query-ethereum/geth-data:/root/.ethereum ethereum/client-go --graphql --graphql.addr 0.0.0.0 --rpc --rpcaddr 0.0.0.0 --nousb --maxpeers 0",
     "geth-goerli-fast-sync": "docker run -it -p 8547:8547 -p 30303:30303 -v ~/development/query-ethereum/geth-data:/root/.ethereum ethereum/client-go --goerli --graphql --graphql.addr 0.0.0.0 --nousb",
     "postgres-docker-pull": "docker pull postgres:12",
-    "postgres-dev": "docker run -it --rm -p 5433:5432 -v ~/development/query-ethereum/postgres-data:/var/lib/postgresql/data postgres:12",
+    "postgres-development": "docker run -it --rm -p 5433:5432 -v ~/development/query-ethereum/postgres-data:/var/lib/postgresql/data postgres:12",
     "psql-development": "psql -h localhost -p 5433 -U postgres",
     "psql-production": ". ./.env-production && psql -h $QUERY_ETHEREUM_DB_HOST -p $QUERY_ETHEREUM_DB_PORT -U postgres",
     "postgres-create-database-development": ". ./.env-development && ts-node --transpile-only src/postgres/create-database.ts",

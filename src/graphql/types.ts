@@ -48,8 +48,20 @@ export type Block = {
   unclesHash: Scalars['Hex32Bytes'],
 };
 
-export type BlocksResult = {
-   __typename?: 'BlocksResult',
+export enum Block_Grouping {
+  Second = 'SECOND',
+  Minute = 'MINUTE',
+  Hour = 'HOUR',
+  Day = 'DAY',
+  Week = 'WEEK',
+  Month = 'MONTH',
+  Year = 'YEAR'
+}
+
+export type BlockGroup = {
+   __typename?: 'BlockGroup',
+  startDate?: Maybe<Scalars['Date']>,
+  endDate?: Maybe<Scalars['Date']>,
   stats?: Maybe<BlockStats>,
   items?: Maybe<Array<Block>>,
 };
@@ -125,14 +137,15 @@ export type GasUsedStats = {
 
 export type Query = {
    __typename?: 'Query',
-  blocks: BlocksResult,
+  blocks: Array<BlockGroup>,
 };
 
 
 export type QueryBlocksArgs = {
   where?: Maybe<BlocksWhereInput>,
   last?: Maybe<Scalars['Int']>,
-  first?: Maybe<Scalars['Int']>
+  first?: Maybe<Scalars['Int']>,
+  groupBy?: Maybe<Block_Grouping>
 };
 
 export type TransactionCountStats = {
