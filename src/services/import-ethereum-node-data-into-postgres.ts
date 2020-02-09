@@ -41,8 +41,8 @@ function generateBlockCSV(lastBlockNumberInPostgres: number, lastBlockNumberInGe
 
         const endBlock = lastBlockNumberInPostgres + numBlocksToImportFromGeth - 1 > lastBlockNumberInGeth ? lastBlockNumberInGeth : lastBlockNumberInPostgres + numBlocksToImportFromGeth - 1;
 
-        if (lastBlockNumberInPostgres === endBlock) {
-            reject('The last block number in postgres is equal to the last block number in geth');
+        if (lastBlockNumberInPostgres >= endBlock) {
+            reject('The last block number in postgres is greater than or equal to the last block number in geth...just have to wait');
         }
 
         console.log('importing from geth');
