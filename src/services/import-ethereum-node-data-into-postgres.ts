@@ -2,6 +2,7 @@ import { postgres } from '../postgres/postgres';
 import * as fs from 'fs-extra';
 import { Block } from '../graphql/types';
 import { exec } from 'child_process';
+import * as fetch from 'node-fetch';
 
 const numBlocksToImportFromGeth: number = parseInt(process.env.QUERY_ETHEREUM_GETH_NUM_BLOCKS_PER_IMPORT || '');
 const gethBatchSize: number = parseInt(process.env.QUERY_ETHEREUM_GETH_BATCH_SIZE || '');
@@ -18,26 +19,31 @@ export async function startImport() {
         
         console.log('retrieving last block from postgres');
 
-        const lastBlockNumberinPostgres: number = await getLastBlockNumberInPostgres();
-        
-        console.log('lastBlockNumberinPostgres', lastBlockNumberinPostgres);
+        const lastBlockNumberInPostgres: number = await getLastBlockNumberInPostgres();
+        const lastBlockNumberInGeth: number = await getLastBlockNumberInGeth();
 
-        await generateBlockCSV(lastBlockNumberinPostgres);
+        console.log('lastBlockNumberInPostgres', lastBlockNumberInPostgres);
+        console.log('lastBlockNumberInGeth', lastBlockNumberInGeth);
+
+        await generateBlockCSV(lastBlockNumberInPostgres, lastBlockNumberInGeth);
         
         const blockCSVFileContents: string = (await fs.readFile('./ethereum-etl-data/blocks.csv')).toString();
     
-        await importBlocks(blockCSVFileContents, lastBlockNumberinPostgres);
+        await importBlocks(blockCSVFileContents, lastBlockNumberInPostgres);
     }
     catch(error) {
         console.log(error);
     }    
 }
 
-function generateBlockCSV(lastBlockNumberInPostgres: number) {
+function generateBlockCSV(lastBlockNumberInPostgres: number, lastBlockNumberInGeth: number) {
     return new Promise((resolve, reject) => {
+
+        const endBlock = lastBlockNumberInPostgres + numBlocksToImportFromGeth - 1 > lastBlockNumberInGeth ? lastBlockNumberInGeth : lastBlockNumberInPostgres + numBlocksToImportFromGeth - 1;
+
         console.log('importing from geth');
-        console.log(`docker run -v ${process.env.QUERY_ETHEREUM_ETHEREUM_ETL_DATA_DIR}:/ethereum-etl/output ethereum-etl:latest export_blocks_and_transactions --max-workers ${gethWorkers} --start-block ${lastBlockNumberInPostgres} ${numBlocksToImportFromGeth === 0 ? '' : `--end-block ${lastBlockNumberInPostgres + numBlocksToImportFromGeth - 1}`} --provider-uri ${process.env.QUERY_ETHERUM_GETH_RPC_ORIGIN} --batch-size ${gethBatchSize} --blocks-output output/blocks.csv`);
-        exec(`docker run -v ${process.env.QUERY_ETHEREUM_ETHEREUM_ETL_DATA_DIR}:/ethereum-etl/output ethereum-etl:latest export_blocks_and_transactions --max-workers ${gethWorkers} --start-block ${lastBlockNumberInPostgres} ${numBlocksToImportFromGeth === 0 ? '' : `--end-block ${lastBlockNumberInPostgres + numBlocksToImportFromGeth - 1}`} --provider-uri ${process.env.QUERY_ETHERUM_GETH_RPC_ORIGIN} --batch-size ${gethBatchSize} --blocks-output output/blocks.csv`, (err, stdout, stderr) => {
+        console.log(`docker run -v ${process.env.QUERY_ETHEREUM_ETHEREUM_ETL_DATA_DIR}:/ethereum-etl/output ethereum-etl:latest export_blocks_and_transactions --max-workers ${gethWorkers} --start-block ${lastBlockNumberInPostgres} --end-block ${endBlock} --provider-uri ${process.env.QUERY_ETHERUM_GETH_RPC_ORIGIN} --batch-size ${gethBatchSize} --blocks-output output/blocks.csv`);
+        exec(`docker run -v ${process.env.QUERY_ETHEREUM_ETHEREUM_ETL_DATA_DIR}:/ethereum-etl/output ethereum-etl:latest export_blocks_and_transactions --max-workers ${gethWorkers} --start-block ${lastBlockNumberInPostgres} --end-block ${endBlock} --provider-uri ${process.env.QUERY_ETHERUM_GETH_RPC_ORIGIN} --batch-size ${gethBatchSize} --blocks-output output/blocks.csv`, (err, stdout, stderr) => {
             console.log('err', err);
 
             console.log('stdout', stdout);
@@ -194,4 +200,24 @@ async function getLastBlockNumberInPostgres(): Promise<number> {
     else {
         return parseInt(response.rows[0].number) + 1;
     }
+}
+
+// TODO I am not sure if eth_syncing will return meaningful data once the node is synced, so we might have to
+// TODO switch at that point to using eth_blockNumber
+async function getLastBlockNumberInGeth(): Promise<number> {
+    // curl --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' -H "Content-Type: application/json" http://172.31.13.33:8545
+    // curl --data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}' -H "Content-Type: application/json" http://172.31.13.33:8545
+
+    const response = await fetch(`${process.env.QUERY_ETHERUM_GETH_RPC_ORIGIN}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+
+    const responseJSON = await response.json();
+
+    console.log('getLastBlockNumberInGeth', getLastBlockNumberInGeth);
+
+    return parseInt(responseJSON.result.currentBlock);
 }
