@@ -67,8 +67,6 @@ export async function blocks(
     if (groupBy === 'SECOND') {
         const blocksForDays: ReadonlyArray<BlocksForDay> = getBlocksForDays(sqlQueryResponse.rows, datesInSameSecond);
 
-        console.log('blocksForDays', blocksForDays)
-
         return blocksForDays.map((blocksForDay) => {
             return getBlockGroup(blocksForDay.blocks, selectionSetObject);
         });
@@ -77,8 +75,6 @@ export async function blocks(
     if (groupBy === 'MINUTE') {
         const blocksForDays: ReadonlyArray<BlocksForDay> = getBlocksForDays(sqlQueryResponse.rows, datesInSameMinute);
 
-        console.log('blocksForDays', blocksForDays)
-
         return blocksForDays.map((blocksForDay) => {
             return getBlockGroup(blocksForDay.blocks, selectionSetObject);
         });
@@ -86,8 +82,6 @@ export async function blocks(
 
     if (groupBy === 'HOUR') {
         const blocksForDays: ReadonlyArray<BlocksForDay> = getBlocksForDays(sqlQueryResponse.rows, datesInSameHour);
-
-        console.log('blocksForDays', blocksForDays)
 
         return blocksForDays.map((blocksForDay) => {
             return getBlockGroup(blocksForDay.blocks, selectionSetObject);
@@ -98,8 +92,6 @@ export async function blocks(
 
         const blocksForDays: ReadonlyArray<BlocksForDay> = getBlocksForDays(sqlQueryResponse.rows, datesInSameDay);
 
-        console.log('blocksForDays', blocksForDays)
-
         return blocksForDays.map((blocksForDay) => {
             return getBlockGroup(blocksForDay.blocks, selectionSetObject);
         });
@@ -108,8 +100,6 @@ export async function blocks(
     if (groupBy === 'WEEK') {
 
         const blocksForDays: ReadonlyArray<BlocksForDay> = getBlocksForDays(sqlQueryResponse.rows, datesInSameWeek);
-
-        console.log('blocksForDays', blocksForDays)
 
         return blocksForDays.map((blocksForDay) => {
             return getBlockGroup(blocksForDay.blocks, selectionSetObject);
@@ -120,8 +110,6 @@ export async function blocks(
 
         const blocksForDays: ReadonlyArray<BlocksForDay> = getBlocksForDays(sqlQueryResponse.rows, datesInSameMonth);
 
-        console.log('blocksForDays', blocksForDays)
-
         return blocksForDays.map((blocksForDay) => {
             return getBlockGroup(blocksForDay.blocks, selectionSetObject);
         });
@@ -130,8 +118,6 @@ export async function blocks(
     if (groupBy === 'YEAR') {
 
         const blocksForDays: ReadonlyArray<BlocksForDay> = getBlocksForDays(sqlQueryResponse.rows, datesInSameYear);
-
-        console.log('blocksForDays', blocksForDays)
 
         return blocksForDays.map((blocksForDay) => {
             return getBlockGroup(blocksForDay.blocks, selectionSetObject);
@@ -388,9 +374,9 @@ function getBlocksForDays(blocks: ReadonlyArray<Block>, dateChecker: (date1: Dat
     return blocks.reduce((result: {
         currentBlockForDay: {
             dateInDay: 'NOT_SET' | Date;
-            blocks: ReadonlyArray<Block>;
+            blocks: Array<Block>;
         };
-        blocksForDays: ReadonlyArray<BlocksForDay>;
+        blocksForDays: Array<BlocksForDay>;
     }, block, index) => {
 
         if (result.currentBlockForDay.dateInDay === 'NOT_SET') {
@@ -411,24 +397,41 @@ function getBlocksForDays(blocks: ReadonlyArray<Block>, dateChecker: (date1: Dat
         ) {
 
             if (index === blocks.length - 1) {
-                return {
-                    ...result,
-                    blocksForDays: [...result.blocksForDays, {
-                        ...result.currentBlockForDay,
-                        blocks: [...result.currentBlockForDay.blocks, block]
-                    }]
-                }
+                result.currentBlockForDay.blocks.push(block);
+                result.blocksForDays.push(result.currentBlockForDay);
+                return result;
+
+                // return {
+                //     ...result,
+                //     blocksForDays: [...result.blocksForDays, {
+                //         ...result.currentBlockForDay,
+                //         blocks: [...result.currentBlockForDay.blocks, block]
+                //     }]
+                // };
+
+                // return {
+                //     ...result,
+                //     blocksForDays: [...result.blocksForDays, {
+                //         ...result.currentBlockForDay,
+                //         blocks: [...result.currentBlockForDay.blocks, block]
+                //     }]
+                // };
             }
             else {
-                return {
-                    ...result,
-                    currentBlockForDay: {
-                        ...result.currentBlockForDay,
-                        blocks: [...result.currentBlockForDay.blocks, block]
-                    }
-                };
+                // return {
+                //     ...result,
+                //     currentBlockForDay: {
+                //         ...result.currentBlockForDay,
+                //         blocks: [...result.currentBlockForDay.blocks, block]
+                //     }
+                // };
+
+                result.currentBlockForDay.blocks.push(block);
+                return result;
             }
         }
+
+        result.blocksForDays.push(result.currentBlockForDay);
 
         return {
             ...result,
@@ -436,23 +439,16 @@ function getBlocksForDays(blocks: ReadonlyArray<Block>, dateChecker: (date1: Dat
                 dateInDay: new Date(block.timestamp),
                 blocks: [block]
             },
-            blocksForDays: [...result.blocksForDays, result.currentBlockForDay]
+            blocksForDays: result.blocksForDays
         };
-
-        // const currentDateInDay: Date = (
-        //     result.currentBlockForDay === 'NOT_SET' ||
-        //     result.currentDateInDay.getFullYear() !== new Date(block.timestamp).getFullYear() ||
-        //     result.currentDateInDay.getMonth() !== new Date(block.timestamp).getMonth() ||
-        //     result.currentDateInDay.getDate() !== new Date(block.timestamp).getDate()
-        // ) ? new Date(block.timestamp) : result.currentDateInDay;
 
         // return {
         //     ...result,
-        //     currentDateInDay,
-        //     blocksForDays: [...result.blocksForDays, {
-        //         dateInDay: currentDateInDay,
-        //         block
-        //     }]
+        //     currentBlockForDay: {
+        //         dateInDay: new Date(block.timestamp),
+        //         blocks: [block]
+        //     },
+        //     blocksForDays: [...result.blocksForDays, result.currentBlockForDay]
         // };
     }, {
         currentBlockForDay: {
