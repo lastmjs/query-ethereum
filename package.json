@@ -35,7 +35,7 @@
   },
   "homepage": "https://github.com/lastmjs/query-ethereum#readme",
   "dependencies": {
-    "@graphql-codegen/cli": "1.12.1",
+    "@graphql-codegen/cli": "1.21.8",
     "@graphql-codegen/typescript": "1.12.1",
     "apollo-server": "2.9.16",
     "bignumber.js": "9.0.0",
